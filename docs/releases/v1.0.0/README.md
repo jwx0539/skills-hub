@@ -1,8 +1,8 @@
-# Skills Hub v0.12.0
+# Skills Hub v1.0.0
 
 [简体中文](README.zh.md)
 
-This version is in development. Release records cover the v0.12.0 branch and the fixes brought in from main; they do not imply that an installer has been published.
+This version is in development. Release records cover the v1.0.0 branch and the fixes brought in from main; they do not imply that an installer has been published.
 
 ## Features and improvements
 

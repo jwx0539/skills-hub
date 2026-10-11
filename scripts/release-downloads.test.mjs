@@ -23,9 +23,9 @@ it('lists available desktop installers using readable labels and versioned direc
 })
 
 it('omits unavailable installers and rejects an empty desktop download list', () => {
- const table = api.renderDownloads({tag:'v0.12.0',language:'en',assets:['Skills-Hub-v0.12.0-Windows-x64.exe']})
+ const table = api.renderDownloads({tag:'v1.0.0',language:'en',assets:['Skills-Hub-v1.0.0-Windows-x64.exe']})
  assert.match(table, /### Downloads/)
- assert.match(table, /v0\.12\.0/)
+ assert.match(table, /v1\.0\.0/)
  assert.doesNotMatch(table, /macOS/)
  assert.throws(() => api.renderDownloads({tag:'v0.11.0',language:'zh',assets:['skillshub-cli-0.11.0-linux-x64']}))
 })
@@ -54,12 +54,12 @@ it('release extraction replaces an existing table with links from the actual ass
  const dir = mkdtempSync(path.join(tmpdir(),'release-downloads-'))
  try {
   const changelog = path.join(dir,'CHANGELOG.md')
-  writeFileSync(changelog,'## [0.12.0]\n\n### Downloads\n\nold-link\n\n### Added\n\n- New feature\n\n## [0.11.0]\n\n- Previous version\n')
-  writeFileSync(path.join(dir,'Skills-Hub-v0.12.0-Windows-x64.exe'),'installer')
-  const result = spawnSync(process.execPath,['scripts/extract-changelog.mjs','v0.12.0',changelog,'--assets',dir,'--language','en'],{encoding:'utf8'})
+  writeFileSync(changelog,'## [1.0.0]\n\n### Downloads\n\nold-link\n\n### Added\n\n- New feature\n\n## [0.11.0]\n\n- Previous version\n')
+  writeFileSync(path.join(dir,'Skills-Hub-v1.0.0-Windows-x64.exe'),'installer')
+  const result = spawnSync(process.execPath,['scripts/extract-changelog.mjs','v1.0.0',changelog,'--assets',dir,'--language','en'],{encoding:'utf8'})
   assert.equal(result.status,0,result.stderr)
   assert.equal((result.stdout.match(/### Downloads/g) ?? []).length,1)
-  assert.match(result.stdout,/releases\/download\/v0\.12\.0\//)
+  assert.match(result.stdout,/releases\/download\/v1\.0\.0\//)
   assert.match(result.stdout,/- New feature/)
   assert.doesNotMatch(result.stdout,/old-link|Previous version/)
  } finally { rmSync(dir,{recursive:true,force:true}) }

@@ -1,10 +1,10 @@
-# v0.12.0 Windows 子目录技能更新修复（[#182](https://github.com/qufei1993/skills-hub/issues/182)）
+# v1.0.0 Windows 子目录技能更新修复（[#182](https://github.com/qufei1993/skills-hub/issues/182)）
 
 [English](windows-subpath-updates.md) · [PR #189](https://github.com/qufei1993/skills-hub/pull/189)
 
 ## 问题与用户影响
 
-Windows 上从仓库子目录安装的 Skill，可能在更新时报 `path not found in repo`。v0.12.0 恢复了这类安装记录的更新能力，无需重新安装或迁移数据库。
+Windows 上从仓库子目录安装的 Skill，可能在更新时报 `path not found in repo`。v1.0.0 恢复了这类安装记录的更新能力，无需重新安装或迁移数据库。
 
 ## 路径与缓存处理
 

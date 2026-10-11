@@ -7,7 +7,7 @@ import type { AutoUpdateConfigDto, ManagedSkill, UpdateResultDto } from './types
 
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }))
 vi.mock('@tauri-apps/plugin-updater', () => ({ check: async () => null }))
-vi.mock('@tauri-apps/api/app', () => ({ getVersion: async () => '0.12.0' }))
+vi.mock('@tauri-apps/api/app', () => ({ getVersion: async () => '1.0.0' }))
 vi.mock('@tauri-apps/plugin-deep-link', () => ({ getCurrent: async () => null, onOpenUrl: async () => () => {} }))
 vi.mock('sonner', () => ({ Toaster: () => null, toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() } }))
 
@@ -73,7 +73,7 @@ beforeEach(async () => {
     if (command === 'get_agent_access_status') return {
       officialState: 'missing', conflict: null, skillId: null, skillEnabled: false,
       bridge: { status: 'missing', reason: 'DIRECTORY_MISSING', path: '/test/bin/skillshub-cli', version: null },
-      installed: false, bundledVersion: '0.12.0', installedVersion: null, centralReason: null, agents: [],
+      installed: false, bundledVersion: '1.0.0', installedVersion: null, centralReason: null, agents: [],
     }
     throw new Error(`Unavailable in test: ${command}`)
   })

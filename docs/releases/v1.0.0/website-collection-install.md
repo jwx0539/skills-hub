@@ -1,4 +1,4 @@
-# Website collection installation in v0.12.0
+# Website collection installation in v1.0.0
 
 [简体中文](website-collection-install.zh.md) · [PR #185](https://github.com/qufei1993/skills-hub/pull/185)
 
@@ -12,7 +12,7 @@ An idle manual Add Skill view closes to show the collection confirmation while p
 
 ## Desktop launch and platform support
 
-Protocol registration ships in the desktop installer; users of older versions need to update to v0.12.0 or later.
+Protocol registration ships in the desktop installer; users of older versions need to update to v1.0.0 or later.
 
 - **macOS**: Valid links show, restore, and focus the main window, including when the app is already running or minimized. Invalid links do not activate it. A development process alone does not register the URL scheme; use a bundled app to verify OS-level launch.
 - **Windows and Linux**: The single-instance plugin forwards links to the running window. Scheduled background update processes bypass the single-instance lock. Debian installers include protocol-registration utilities; registration failures do not prevent desktop startup, and package startup verification uses an isolated desktop bus session.

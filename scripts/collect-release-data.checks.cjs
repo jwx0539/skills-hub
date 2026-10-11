@@ -223,7 +223,7 @@ test("pagination includes older releases and excludes drafts and prereleases", a
         [
           release(),
           release("v0.11.0", { draft: true }),
-          release("v0.12.0", { prerelease: true }),
+          release("v1.0.0", { prerelease: true }),
         ],
         { headers: { Link: `<${next}>; rel="next"` } },
       );
@@ -369,7 +369,7 @@ test("empty release lists, missing official latest and duplicate versions abort 
     /empty|no public/i,
   );
   await assert.rejects(
-    collect({ fetchImpl: source([release()], release("v0.12.0")) }),
+    collect({ fetchImpl: source([release()], release("v1.0.0")) }),
     /latest/i,
   );
   await assert.rejects(
