@@ -2,7 +2,7 @@
 
 [简体中文](README.zh.md)
 
-This version is in development. Release records cover the v1.0.0 branch and the fixes brought in from main; they do not imply that an installer has been published.
+Released on October 11, 2026. Download installers and read the bilingual release notes in the [Skills Hub v1.0.0 release](https://github.com/qufei1993/skills-hub/releases/tag/v1.0.0).
 
 ## Features and improvements
 

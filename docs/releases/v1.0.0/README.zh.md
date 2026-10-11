@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-本版本仍在开发中，记录涵盖 v1.0.0 分支及从 main 合入的修复，不代表已发布安装包。
+本版本已于 2026 年 10 月 11 日发布。安装包与中英文发布说明见 [Skills Hub v1.0.0 发布页](https://github.com/qufei1993/skills-hub/releases/tag/v1.0.0)。
 
 ## 功能与优化
 
