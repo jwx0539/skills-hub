@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.12.0]
 
+- **Headless Skill updates**: Prevent scheduled updates and “Update now” workers from creating application windows or briefly appearing as an `exec` icon in the macOS Dock. Updates keep running independently of the main window. (#152)
+
 - **Windows subdirectory Skill updates**: Fix `path not found in repo` when saved source paths contain backslashes. New Git source paths use forward slashes, existing records remain updateable, and sparse caches missing the selected directory are refreshed. (#182)
 
 - Native collection installation now validates manifests directly, supporting large catalogs without routing them through the external deep-link size limit.
