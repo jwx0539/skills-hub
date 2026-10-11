@@ -1,23 +1,21 @@
 # Collection installation workspace
 
-The desktop confirmation keeps a searchable, independently scrolling Skill list beside installation settings, with a persistent heading and action bar. Narrow windows place settings before the list. Existing light/dark tokens and keyboard focus behavior are preserved.
+[简体中文](collection-install-workspace.zh.md) · [PR #187](https://github.com/qufei1993/skills-hub/pull/187)
 
-Installation reuses repository discovery, single-Skill installation, tagging and deployment commands, plus tool icons, scope selection and project job generation. Users can select existing tags or create one for newly installed items only. Tags are saved before deployment so partially successful batches remain discoverable. Existing tags are retained. Same-source library content is preserved while still allowing deployment to selected tools.
+## Selection, tagging, and deployment
 
-Each pinned repository is scanned once per attempt. Retries refresh discovery and retain installed IDs, resuming tagging and deployment. Project deployment cannot start without a project directory.
+Collection confirmation uses the shared two-step flow. Skills are selected by default; users can deselect items or use select-all. Search preserves selection, an empty selection disables installation, and installation locks selection. Progress and retries include only selected items.
 
-The official Agent management Skill documents website manifest handling, pinned SHA installation, existing single-Skill CLI commands and partial-failure recovery. No collection CLI command is introduced.
+Choose existing tags or create a tag for new installs, then select tools and global or project deployment. Tags are saved before distribution and existing tags remain unchanged. Project deployment requires a directory. Existing same-source content is preserved but can still be deployed using its backend-verified Skill ID.
 
-Same-source items use the backend-verified Skill ID, preventing renamed Skills from resolving to an unrelated item with the same name. Scope changes normalize shared-tool selections.
+## Conflicts, pinned sources, and retries
 
-Validation: `npm run check` passed, including regression coverage for tagging, retries, scan reuse, project scope and source/name collisions. The desktop development build was rebuilt and launched. Fixture-based visual checks covered the engineering collection in light/dark themes, EN/ZH/KO and a narrow window. A manual website handoff exposed rejection of pinned repository-root references; all 31 items failed before download. This validation bug now has regression coverage and a fix. After the fix, the real desktop app installed all 31 Skills from Skills for Real Engineers and deployed them to Claude Code and Codex. Cleanup tag `合集安装测试-20261008` contains 31 items; the library grew from 61 to 92. Deselecting one item showed 30 / 31, and select-all restored 31 / 31 with the matching action count.
+A read-only local preview identifies existing sources and name conflicts without downloads or credential access. Installation waits for preview and revalidates sources during execution. Conflicting items cannot be selected or installed.
 
-Follow-up fix: installation accepts repository-root `/tree/<ref>` references while still requiring a file path for `/blob/<ref>/<path>`. Regression coverage includes pinned SHA and invalid sources. Pending rows use text status without a radio-like empty circle.
+Valid repository-root `/tree/<ref>` URLs are accepted, fixing rejection before download for pinned collection sources. `/blob/<ref>/<path>` still requires a file path. Each pinned repository is scanned once per attempt. Retries refresh discovery, retain installed IDs, and resume tagging or distribution without reinstalling successful items.
 
-Collection Skills are selected by default, with individual checkboxes and a select-all control supporting mixed state. The install action shows the selected count and is disabled for an empty selection. Search preserves selection; installation locks it, and progress and retries include only selected items.
+All selected items succeeding refreshes the library, closes confirmation, and shows a success notification. Failures retain the dialog for retry; successful retries also close it. The official management Skill documents pinned installation and partial-failure recovery through existing single-Skill CLI commands.
 
-After all selected items succeed, refresh the library, close the dialog and show the successful count. Failures keep the dialog open; a successful retry also closes it automatically.
+## Regression coverage
 
-A second real desktop installation completed all 31 items, closed the dialog automatically and displayed the success notification. Newly installed items retained the dedicated test tag.
-
-A read-only local preview classifies existing sources and name conflicts using the same Git installation classifier, without downloads or credential access. Installation waits for the check; failures can be retried. Preview status is separate from execution results, and installation revalidates sources before preserving existing content and tags or deploying to selected tools.
+PR tests cover pinned and invalid sources, source/name conflicts, preview, tagging, scan reuse, selected-only installation, retries, completion, and project requirements. Recorded desktop validation installed all 31 Skills from Skills for Real Engineers with a dedicated tag and deployment to Claude Code and Codex, and checked light/dark themes, EN/ZH/KO, and narrow windows.
