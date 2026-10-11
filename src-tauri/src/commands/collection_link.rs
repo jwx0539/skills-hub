@@ -34,7 +34,7 @@ fn safe_segment(value: &str) -> bool {
 pub fn parse_link(link: &str) -> Result<CollectionManifest, &'static str> {
     let invalid = "COLLECTION_LINK_INVALID";
     if link.len() > 30000 {
-        return Err(invalid);
+        return Err("COLLECTION_LINK_TOO_LARGE");
     }
     let url = reqwest::Url::parse(link).map_err(|_| invalid)?;
     if url.scheme() != "skills-hub"
@@ -61,14 +61,22 @@ fn validate_manifest(
     max_sources: usize,
 ) -> Result<CollectionManifest, &'static str> {
     let invalid = "COLLECTION_LINK_INVALID";
-    if manifest.v != 1
-        || manifest.title.trim().is_empty()
+    if manifest.v != 1 {
+        return Err("COLLECTION_LINK_UNSUPPORTED_VERSION");
+    }
+    if manifest.skills.is_empty() {
+        return Err("COLLECTION_LINK_EMPTY");
+    }
+    if manifest.skills.len() > max_skills {
+        return Err("COLLECTION_LINK_TOO_MANY_SKILLS");
+    }
+    if manifest.sources.len() > max_sources {
+        return Err("COLLECTION_LINK_TOO_MANY_SOURCES");
+    }
+    if manifest.title.trim().is_empty()
         || manifest.title.chars().count() > 120
         || manifest.title.chars().any(char::is_control)
         || manifest.sources.is_empty()
-        || manifest.sources.len() > max_sources
-        || manifest.skills.is_empty()
-        || manifest.skills.len() > max_skills
     {
         return Err(invalid);
     }
@@ -79,26 +87,27 @@ fn validate_manifest(
             || source.revision.len() != 40
             || !source.revision.bytes().all(|b| b.is_ascii_hexdigit())
         {
-            return Err(invalid);
+            return Err("COLLECTION_LINK_UNSAFE");
         }
     }
     let mut names = std::collections::HashSet::new();
     let mut directories = std::collections::HashSet::new();
     for skill in &manifest.skills {
         if !safe_segment(&skill.name)
-            || !names.insert(skill.name.to_lowercase())
             || skill.source >= manifest.sources.len()
             || skill.path.len() > 512
             || !(skill.path == "." || skill.path.split('/').all(safe_segment))
             || skill.path.ends_with("SKILL.md")
         {
-            return Err(invalid);
+            return Err("COLLECTION_LINK_UNSAFE");
         }
-        if !directories.insert((
-            manifest.sources[skill.source].repo.to_lowercase(),
-            skill.path.to_lowercase(),
-        )) {
-            return Err(invalid);
+        if !names.insert(skill.name.to_lowercase())
+            || !directories.insert((
+                manifest.sources[skill.source].repo.to_lowercase(),
+                skill.path.to_lowercase(),
+            ))
+        {
+            return Err("COLLECTION_LINK_DUPLICATE");
         }
     }
     Ok(manifest)
@@ -125,6 +134,71 @@ mod tests {
             "skills-hub://install?manifest={}",
             urlencoding::encode(&value.to_string())
         )
+    }
+    #[test]
+    fn reports_oversized_external_links() {
+        assert_eq!(
+            parse_link(&"x".repeat(30001)).unwrap_err(),
+            "COLLECTION_LINK_TOO_LARGE"
+        );
+    }
+    #[test]
+    fn reports_unsupported_manifest_versions() {
+        let mut value = manifest();
+        value["v"] = 2.into();
+        assert_eq!(
+            parse_link(&link(value)).unwrap_err(),
+            "COLLECTION_LINK_UNSUPPORTED_VERSION"
+        );
+    }
+    #[test]
+    fn reports_empty_selections() {
+        let mut value = manifest();
+        value["skills"] = serde_json::json!([]);
+        assert_eq!(
+            parse_link(&link(value)).unwrap_err(),
+            "COLLECTION_LINK_EMPTY"
+        );
+    }
+    #[test]
+    fn reports_duplicate_skills() {
+        let mut value = manifest();
+        let duplicate = value["skills"][0].clone();
+        value["skills"].as_array_mut().unwrap().push(duplicate);
+        assert_eq!(
+            parse_link(&link(value)).unwrap_err(),
+            "COLLECTION_LINK_DUPLICATE"
+        );
+    }
+    #[test]
+    fn reports_unsafe_installation_data_without_echoing_it() {
+        for (field, content) in [
+            ("path", "../private-path-example"),
+            ("repo", "owner/repo?token=private-token-example"),
+            ("ref", "main"),
+        ] {
+            let mut value = manifest();
+            if field == "path" {
+                value["skills"][0][field] = content.into();
+            } else {
+                value["sources"][0][field] = content.into();
+            }
+            assert_eq!(
+                parse_link(&link(value)).unwrap_err(),
+                "COLLECTION_LINK_UNSAFE"
+            );
+        }
+    }
+    #[test]
+    fn reports_excessive_source_selection() {
+        let mut value = manifest();
+        value["sources"] = (0..101)
+            .map(|i| serde_json::json!({"repo":format!("owner/repo-{i}"),"ref":"a".repeat(40)}))
+            .collect();
+        assert_eq!(
+            parse_link(&link(value)).unwrap_err(),
+            "COLLECTION_LINK_TOO_MANY_SOURCES"
+        );
     }
     #[test]
     fn accepts_website_aaron_marketing_collection_with_120_skills() {
@@ -166,7 +240,10 @@ mod tests {
             validate_collection_manifest(serde_json::from_value(value.clone()).unwrap()).unwrap();
         assert_eq!(parsed.skills.len(), 1297);
         value["skills"][0]["path"] = "../escape".into();
-        assert!(validate_collection_manifest(serde_json::from_value(value).unwrap()).is_err());
+        assert_eq!(
+            validate_collection_manifest(serde_json::from_value(value).unwrap()).unwrap_err(),
+            "COLLECTION_LINK_UNSAFE"
+        );
     }
 
     #[test]
@@ -179,7 +256,10 @@ mod tests {
                 })
             })
             .collect();
-        assert!(validate_collection_manifest(serde_json::from_value(value).unwrap()).is_err());
+        assert_eq!(
+            validate_collection_manifest(serde_json::from_value(value).unwrap()).unwrap_err(),
+            "COLLECTION_LINK_TOO_MANY_SKILLS"
+        );
         let mut value = manifest();
         value["sources"][0]["ref"] = "main".into();
         assert!(validate_collection_manifest(serde_json::from_value(value).unwrap()).is_err());

@@ -23,4 +23,6 @@ Website links use `skills-hub://install?manifest=<encoded JSON>`. Manifest v1 co
 
 Website and native manifests share limits of 2,000 Skills and 100 sources. External links must also fit within 30,000 encoded bytes. This replaces the outdated website-only 100-Skill limit; Aaron's 120-Skill marketing collection opens its complete confirmation list. Regression coverage uses the published collection manifest with its pinned revision and directory paths.
 
+Failed website requests show a persistent error explanation with a specific reason and recovery action. For oversized links, select fewer Skills and install in batches, or open the collection from Add Skills. Unsupported manifest versions suggest updating the app; empty selections, duplicate entries, incorrect installation information, unreadable lists, and receiver failures have separate instructions. Native-dialog failures fall back to a persistent, dismissible notification. Unknown internal errors are replaced with safe recovery instructions.
+
 The parser rejects unsupported versions, unsafe paths, credentials, extra parameters, duplicate entries or names, unpinned sources, and oversized requests. Receiving a link performs no network or credential access. Confirmed installation uses existing services, operation locks, and proxy-aware Git commands. No database migration is required.

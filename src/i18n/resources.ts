@@ -80,9 +80,49 @@ export const resources = {
   "failed": "Failed",
   "missing": "The requested Skill was not found at this revision.",
   "conflict": "A different Skill uses this name. Resolve the conflict in your library first.",
-  "busy": "Finish or close the current collection before opening another.",
-  "invalid": "This installation link is invalid or unsupported. Return to the website and try again.",
-  "unavailable": "Unable to receive website installation links. Restart Skills Hub and try again.",
+  "busy": "Finish the current operation or close the installation dialog before opening another collection.",
+  "linkErrors": {
+    "tooLarge": {
+      "title": "The installation list is too large",
+      "help": "Select fewer Skills on the website and install them in batches, or find this collection in Add Skills and install it there."
+    },
+    "tooManySkills": {
+      "title": "Too many Skills selected",
+      "help": "This version supports up to 2,000 Skills at a time. Select fewer Skills and install them in batches."
+    },
+    "tooManySources": {
+      "title": "Too many repository sources selected",
+      "help": "This version supports up to 100 repository sources at a time. Select fewer Skills and install them in batches."
+    },
+    "unsupported": {
+      "title": "This version cannot read the installation list",
+      "help": "Update Skills Hub, then open the collection from the website again. If this still happens after updating, report the collection name."
+    },
+    "empty": {
+      "title": "No Skills selected for installation",
+      "help": "Select at least one Skill on the website, then click Install in Skills Hub."
+    },
+    "duplicate": {
+      "title": "The installation list contains duplicate Skills or names",
+      "help": "Deselect duplicate Skills or Skills with the same name on the website, then open the installation list again."
+    },
+    "unsafe": {
+      "title": "This collection has incorrect installation information",
+      "help": "A repository source, Skill name, or directory does not meet installation requirements. Report the collection name so its information can be corrected."
+    },
+    "invalid": {
+      "title": "Unable to read the installation list",
+      "help": "Return to the collection page on the website, select the Skills again, and click Install in Skills Hub. If this still fails, report the collection name."
+    },
+    "unavailable": {
+      "title": "Unable to receive the website installation request",
+      "help": "Restart Skills Hub, then click Install in Skills Hub on the website again."
+    },
+    "failed": {
+      "title": "Unable to open the installation confirmation right now",
+      "help": "Open this collection again. If this still fails, restart Skills Hub and retry."
+    }
+  },
   "refreshFailed": "Installation finished, but the library could not refresh. Reopen My Skills.",
   "search": "Search Skills",
   "noMatches": "No matching Skills. Your selection is unchanged.",
@@ -1429,9 +1469,49 @@ export const resources = {
   "failed": "失败",
   "missing": "在指定版本中没有找到这个 Skill。",
   "conflict": "技能库中有同名的其他 Skill，请先处理名称冲突。",
-  "busy": "请先完成或关闭当前合集，再打开另一个合集。",
-  "invalid": "安装链接无效或暂不支持，请回到官网重试。",
-  "unavailable": "无法接收官网安装链接，请重启 Skills Hub 后重试。",
+  "busy": "请先完成当前操作或关闭安装窗口，再打开其他合集。",
+  "linkErrors": {
+    "tooLarge": {
+      "title": "安装清单太大",
+      "help": "请在官网减少勾选的 Skills，分批安装；也可以在「添加 Skills」中找到这个合集并安装。"
+    },
+    "tooManySkills": {
+      "title": "一次选择的 Skills 太多",
+      "help": "当前版本一次最多支持 2,000 个 Skills。请减少选择，分批安装。"
+    },
+    "tooManySources": {
+      "title": "一次选择的来源仓库太多",
+      "help": "当前版本一次最多支持 100 个仓库来源。请减少选择，分批安装。"
+    },
+    "unsupported": {
+      "title": "当前版本无法读取这份安装清单",
+      "help": "请更新 Skills Hub，再从官网打开合集。如果更新后仍出现此提示，请反馈合集名称。"
+    },
+    "empty": {
+      "title": "还没有选择要安装的 Skills",
+      "help": "请在官网至少勾选一个 Skill，再点击「在 Skills Hub 中安装」。"
+    },
+    "duplicate": {
+      "title": "安装清单中有重名或重复的 Skills",
+      "help": "请在官网取消重名或重复的项目，再打开安装清单。"
+    },
+    "unsafe": {
+      "title": "这个合集的安装信息有误",
+      "help": "来源、Skill 名称或目录不符合安装要求。请反馈合集名称，以便修正。"
+    },
+    "invalid": {
+      "title": "无法读取安装清单",
+      "help": "请回到官网合集页重新选择 Skills，再点击「在 Skills Hub 中安装」；仍然失败时，请反馈合集名称。"
+    },
+    "unavailable": {
+      "title": "无法接收官网的安装请求",
+      "help": "请重启 Skills Hub，再回到官网点击「在 Skills Hub 中安装」。"
+    },
+    "failed": {
+      "title": "暂时无法打开安装确认",
+      "help": "请重新打开这个合集；仍然失败时，重启 Skills Hub 后重试。"
+    }
+  },
   "refreshFailed": "安装已结束，但技能库刷新失败，请重新打开「我的 Skills」。",
   "search": "搜索 Skills",
   "noMatches": "没有匹配的 Skills，已选项保持不变。",
