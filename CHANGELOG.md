@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **Headless Skill updates**: Prevent scheduled updates and “Update now” workers from creating extra windows or briefly appearing as an `exec` icon in the macOS Dock. Background updates continue independently of the main window. (fixes [#152](https://github.com/qufei1993/skills-hub/issues/152), [PR #193](https://github.com/qufei1993/skills-hub/pull/193))
 - **Source-mirrored Skill updates**: Apply source file deletions and renames during single, batch, and same-source Git updates instead of blocking them. Reject update sources without `SKILL.md` before replacing the library copy.
 - **Windows scheduled update errors**: Decode localized Task Scheduler output with the system OEM code page instead of displaying garbled errors when creating, deleting, querying, or running tasks. (fixes [#181](https://github.com/qufei1993/skills-hub/issues/181), [PR #188](https://github.com/qufei1993/skills-hub/pull/188))
 - **Windows subdirectory Skill updates**: Fix `path not found in repo` for backslash-separated source paths. Normalize new paths, retain compatibility with existing installations, and refresh caches missing the selected directory without reinstallation or database migration. (fixes [#182](https://github.com/qufei1993/skills-hub/issues/182), [PR #189](https://github.com/qufei1993/skills-hub/pull/189))

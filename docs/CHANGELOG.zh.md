@@ -19,6 +19,7 @@
 
 ### 修复
 
+- **后台更新不显示窗口**：修复系统定时更新和「立即更新」的后台进程创建额外窗口、在 macOS Dock 短暂显示 `exec` 图标的问题，更新继续独立于主窗口运行（修复 [#152](https://github.com/qufei1993/skills-hub/issues/152)，[PR #193](https://github.com/qufei1993/skills-hub/pull/193)）。
 - **技能更新与来源一致**：单个更新、批量更新及同源 Git 重复安装允许同步来源的文件删除和重命名，不再因此拦截；来源缺少 `SKILL.md` 时拒绝覆盖中央技能目录。
 - **Windows 定时更新错误乱码**：按系统 OEM 代码页解码任务计划程序的本地语言输出，修复创建、删除、查询和立即运行任务时错误提示乱码的问题（修复 [#181](https://github.com/qufei1993/skills-hub/issues/181)，[PR #188](https://github.com/qufei1993/skills-hub/pull/188)）。
 - **Windows 子目录技能更新**：修复来源路径含反斜杠时更新报 `path not found in repo` 的问题。新路径统一格式，已有记录继续可用，缺少目标目录的缓存自动刷新，无需重新安装或迁移数据库（修复 [#182](https://github.com/qufei1993/skills-hub/issues/182)，[PR #189](https://github.com/qufei1993/skills-hub/pull/189)）。

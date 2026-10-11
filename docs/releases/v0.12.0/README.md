@@ -17,6 +17,7 @@ This version is in development. Release records cover the v0.12.0 branch and the
 
 | Problem | Issue | Pull request | Details |
 | --- | --- | --- | --- |
+| Scheduled/manual update workers create windows or a macOS Dock icon | [#152](https://github.com/qufei1993/skills-hub/issues/152) | [#193](https://github.com/qufei1993/skills-hub/pull/193) | [Headless updates](headless-updates.md) |
 | Skill updates blocked by source file deletions | — | — | [Source-mirrored updates](source-mirror-updates.md) |
 | Garbled localized Windows scheduler errors | [#181](https://github.com/qufei1993/skills-hub/issues/181) | [#188](https://github.com/qufei1993/skills-hub/pull/188) | [Error decoding](windows-scheduler-output.md) |
 | Windows subdirectory updates fail with `path not found in repo` | [#182](https://github.com/qufei1993/skills-hub/issues/182) | [#189](https://github.com/qufei1993/skills-hub/pull/189) | [Path compatibility](windows-subpath-updates.md) |

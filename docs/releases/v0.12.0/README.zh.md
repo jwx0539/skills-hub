@@ -17,6 +17,7 @@
 
 | 问题 | Issue | PR | 说明 |
 | --- | --- | --- | --- |
+| 后台更新创建额外窗口或 macOS Dock 图标 | [#152](https://github.com/qufei1993/skills-hub/issues/152) | [#193](https://github.com/qufei1993/skills-hub/pull/193) | [后台无窗口更新](headless-updates.zh.md) |
 | 来源删除文件导致技能更新被拦截 | — | — | [与来源保持一致](source-mirror-updates.zh.md) |
 | Windows 定时任务本地语言错误乱码 | [#181](https://github.com/qufei1993/skills-hub/issues/181) | [#188](https://github.com/qufei1993/skills-hub/pull/188) | [错误解码](windows-scheduler-output.zh.md) |
 | Windows 子目录更新报 `path not found in repo` | [#182](https://github.com/qufei1993/skills-hub/issues/182) | [#189](https://github.com/qufei1993/skills-hub/pull/189) | [路径兼容](windows-subpath-updates.zh.md) |
