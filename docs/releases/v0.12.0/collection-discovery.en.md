@@ -16,6 +16,6 @@ Data is read from `skills-hub-collections.qzfweb.workers.dev` through the applic
 
 ## Large collection installation and regression coverage
 
-Native installation validates manifests directly through IPC, supporting up to 2,000 Skills while preserving source, pinned revision, duplicate, and path checks. External deep-link limits remain unchanged.
+Native installation validates manifests directly through IPC, supporting up to 2,000 Skills while preserving source, pinned revision, duplicate, and path checks. Website links share these manifest limits and retain the 30,000-byte encoded link limit; see [website collection installation](website-collection-install.md).
 
 PR validation covered scrolling from 12 to 24 to 36 cards, search, details, snapshot pinning, cache reuse, stale observer callbacks, and query resets. Native manifest regressions include a 1,297-Skill collection, unsafe paths, and excessive manifests.

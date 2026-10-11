@@ -21,4 +21,6 @@ Protocol registration ships in the desktop installer; users of older versions ne
 
 Website links use `skills-hub://install?manifest=<encoded JSON>`. Manifest v1 contains a collection title, GitHub sources pinned to 40-character commit hashes, and selected Skill names and directories.
 
+Website and native manifests share limits of 2,000 Skills and 100 sources. External links must also fit within 30,000 encoded bytes. This replaces the outdated website-only 100-Skill limit; Aaron's 120-Skill marketing collection opens its complete confirmation list. Regression coverage uses the published collection manifest with its pinned revision and directory paths.
+
 The parser rejects unsupported versions, unsafe paths, credentials, extra parameters, duplicate entries or names, unpinned sources, and oversized requests. Receiving a link performs no network or credential access. Confirmed installation uses existing services, operation locks, and proxy-aware Git commands. No database migration is required.

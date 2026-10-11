@@ -26,6 +26,7 @@
 - **Skill 更新中断恢复**：更新进程终止后恢复一直显示运行中的状态，保留已完成进度并重新开放「立即更新」。通过共享操作锁保护仍在运行的任务及并发手动触发（修复 [#183](https://github.com/qufei1993/skills-hub/issues/183)，[PR #192](https://github.com/qufei1993/skills-hub/pull/192)）。
 - **CLI 导入误报过期计划**：修复来源路径未规范化且含排除项时，`skills adopt --yes` 误报 `PLAN_STALE` 的问题。预览与确认统一使用规范化根目录，保留内容变化与路径越界检查（修复 [#186](https://github.com/qufei1993/skills-hub/issues/186)，[PR #191](https://github.com/qufei1993/skills-hub/pull/191)）。
 - **大型合集安装**：桌面内直接校验合集清单，支持最多 2,000 个 Skills，避免误用外部深链长度限制；来源、固定版本、重复项和路径检查继续生效（[PR #187](https://github.com/qufei1993/skills-hub/pull/187)）。
+- **官网合集链接校验**：移除导致 Aaron 的 120 项营销技能合集等有效清单被误报为无效链接的旧 100 项限制。官网与桌面内清单共用 Skills 和来源数量上限，保留外部链接 30,000 字节长度限制及来源、固定版本、重复项和路径检查。
 - **固定版本仓库根来源**：允许有效的 `/tree/<ref>` 仓库根链接，修复合集固定提交版本在下载前就被来源校验拒绝的问题（[PR #187](https://github.com/qufei1993/skills-hub/pull/187)）。
 - **合集冲突与完成状态**：安装前识别已有来源和名称冲突，禁选冲突项，计数、安装及重试仅处理可安装的选中项；执行前再次校验。全部成功后关闭确认并提示，失败项保留供重试（[PR #187](https://github.com/qufei1993/skills-hub/pull/187)）。
 - **安装状态保留与官网唤起**：返回或临时让出确认窗口时保留输入、勾选、设置及重试进度，取消检测后忽略迟到结果。官网请求会收起空闲的手动安装界面并显示合集确认；macOS 有效链接会恢复并置前窗口。兼容 Windows 候选路径分隔符（[PR #185](https://github.com/qufei1993/skills-hub/pull/185)、[PR #187](https://github.com/qufei1993/skills-hub/pull/187)）。

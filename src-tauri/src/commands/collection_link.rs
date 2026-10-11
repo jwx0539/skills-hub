@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+const MAX_COLLECTION_SKILLS: usize = 2000;
+const MAX_COLLECTION_SOURCES: usize = 100;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct CollectionSource {
@@ -50,7 +52,7 @@ pub fn parse_link(link: &str) -> Result<CollectionManifest, &'static str> {
         return Err(invalid);
     }
     let manifest: CollectionManifest = serde_json::from_str(&params[0].1).map_err(|_| invalid)?;
-    validate_manifest(manifest, 100, 20)
+    validate_manifest(manifest, MAX_COLLECTION_SKILLS, MAX_COLLECTION_SOURCES)
 }
 
 fn validate_manifest(
@@ -109,7 +111,8 @@ pub fn parse_collection_link(link: String) -> Result<CollectionManifest, String>
 pub fn validate_collection_manifest(
     manifest: CollectionManifest,
 ) -> Result<CollectionManifest, String> {
-    validate_manifest(manifest, 2000, 100).map_err(str::to_owned)
+    validate_manifest(manifest, MAX_COLLECTION_SKILLS, MAX_COLLECTION_SOURCES)
+        .map_err(str::to_owned)
 }
 #[cfg(test)]
 mod tests {
@@ -123,6 +126,31 @@ mod tests {
             urlencoding::encode(&value.to_string())
         )
     }
+    #[test]
+    fn accepts_website_aaron_marketing_collection_with_120_skills() {
+        let value: serde_json::Value = serde_json::from_str(include_str!(
+            "tests/fixtures/website-aaron-marketing-manifest.json"
+        ))
+        .unwrap();
+        let parsed = parse_link(&link(value)).unwrap();
+        assert_eq!(parsed.title, "Aaron 营销技能合集");
+        assert_eq!(parsed.skills.len(), 120);
+        assert_eq!(parsed.sources.len(), 1);
+        assert_eq!(
+            parsed.sources[0].repo,
+            "aaron-he-zhu/aaron-marketing-skills"
+        );
+        assert_eq!(
+            parsed.sources[0].revision,
+            "9c7e1cebeabca15e0af0ce856799361a0f5d35d7"
+        );
+        assert_eq!(parsed.skills[0].path, "ad/activate/ad-account-auditor");
+        assert_eq!(
+            parsed.skills[119].path,
+            "social/observe/social-pulse-monitor"
+        );
+    }
+
     #[test]
     fn native_catalog_accepts_large_manifests_without_expanding_deep_links() {
         let mut value = manifest();
@@ -158,7 +186,7 @@ mod tests {
     }
 
     #[test]
-    fn accepts_all_current_website_collection_manifests() {
+    fn accepts_website_collection_manifest_fixtures() {
         let fixtures: Vec<serde_json::Value> =
             serde_json::from_str(include_str!("tests/fixtures/website-collections.json")).unwrap();
         let expected = [
