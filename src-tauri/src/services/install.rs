@@ -503,7 +503,7 @@ impl SkillsHubService {
             id: skill.id,
             name: skill.name,
             update_available: checked.changed,
-            held_back: checked.changed && checked.removal_count > 0,
+            held_back: false,
             removal_count: checked.removal_count,
         })
     }
@@ -960,6 +960,9 @@ fn map_update_error(error: anyhow::Error) -> ServiceError {
         );
     }
     let first = error.to_string();
+    if first.starts_with("SKILL_INVALID|") {
+        return invalid_source();
+    }
     if first == "SKILL_SOURCE_SELECTION_REQUIRED" {
         return ServiceError::new(
             ErrorCode::InvalidSource,

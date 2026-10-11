@@ -1336,11 +1336,6 @@ fn update_managed_skill_from_source_inner(
         });
     }
     let changed = previous_content_hash != next_content_hash;
-    let removal_count = count_update_removals(store, skill_id, &central_path, &staging_dir)?;
-    if changed && removal_count > 0 {
-        let _ = std::fs::remove_dir_all(&staging_dir);
-        anyhow::bail!("UPDATE_HELD_BACK|{removal_count}");
-    }
     let description = parse_skill_md(&staging_dir.join("SKILL.md"))
         .and_then(|(_, desc)| desc)
         .or(record.description.clone());
@@ -1627,6 +1622,13 @@ fn stage_skill_source(
         }
     })();
 
+    let staged = staged.and_then(|result| {
+        anyhow::ensure!(
+            staging_dir.join("SKILL.md").is_file(),
+            "SKILL_INVALID|missing_skill_md"
+        );
+        Ok(result)
+    });
     match staged {
         Ok((revision, subpath)) => Ok((staging_dir, revision, subpath)),
         Err(error) => {
