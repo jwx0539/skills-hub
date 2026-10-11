@@ -6,62 +6,30 @@ All notable changes to this project will be documented in this file.
 
 ## [0.12.0]
 
-- **Source-mirrored Skill updates**: Apply source file deletions and renames during single, batch, and same-source Git updates instead of blocking them. Reject update sources without `SKILL.md` before replacing the library copy.
-
-- **Windows subdirectory Skill updates**: Fix `path not found in repo` when saved source paths contain backslashes. New Git source paths use forward slashes, existing records remain updateable, and sparse caches missing the selected directory are refreshed. (#182)
-
-- Native collection installation now validates manifests directly, supporting large catalogs without routing them through the external deep-link size limit.
-
-- Search collection metadata only and automatically reveal the next 12 collections when scrolling near the end of the list.
-
-- Reuse loaded discovery lists on detail return and cached immutable catalog snapshots when the publication version has not changed, avoiding repeated full-index downloads.
-
-- Load desktop collections from the published catalog snapshot used by the website, pin details and offline caches to the same version, and retire the legacy four-collection endpoint.
-
-- Collection discovery renders 12 cards per batch, with automatic scroll loading and preserved batches when returning from details.
-
-- Give collection details a category-colored heading, matching icon and topic labels; show a shared repository once while retaining per-item sources for mixed repositories.
-
-- Make unavailable selection rows distinct with a muted background and minus-marked disabled checkbox; align controls with the title and show truncated paths inline.
-
-- **Shared Skill selection list**: Collection, Git and local confirmation reuse the same search, selection toolbar, rows and expandable descriptions. Collection preview conflicts are unchecked and disabled, excluded from counts and installation; select-all changes only matching eligible rows.
-
-- Align expanded project directories with installation controls; left-align recent paths and preserve the same columns in narrow windows.
-
-- **Discovery and source dialog styling**: Use theme-aware category colors for collection identity, a distinct search surface, and a compact Git/local source selector with a tighter dialog layout.
-
 ### Added
 
-- **Collection-first discovery**: Browse the website collection catalog and details inside the desktop app, then reuse the collection installation dialog. A unified search shows matching collections and skills.sh results in place; task shortcuts and shared Git/local import headers replace nested tabs and the blank search screen. Remove the Top 300 catalog and its scheduled generator; cache website data for offline fallback.
+- **Collection discovery**: Browse the website's published collection catalog and details in the desktop app, with matching collections and skills.sh results in one search. Git and local import remain available from the page header. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Website collection installation**: Open a collection from the website, review its Skills and pinned GitHub sources, and confirm installation into the shared library. Choose individual Skills, tags, tools, and global or project deployment; preserve existing same-source content and retry failed items. ([PR #185](https://github.com/qufei1993/skills-hub/pull/185), [PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Independent website release data**: Stable desktop releases publish installer links and bilingual notes to a dedicated Cloudflare Pages data source without rebuilding the website. Preparation failures stop deployment; previous production deployments remain available for rollback. ([PR #184](https://github.com/qufei1993/skills-hub/pull/184))
 
-- **Independent website release data**: Publishing a stable desktop release updates an isolated Cloudflare Pages snapshot of installer links and bilingual notes, without rebuilding the website. Preparation failures do not deploy; previous production deployments can be restored in Pages.
+### Improved
 
-- **Website collection installation**: Open a collection from the website in Skills Hub, review its Skills and sources, and explicitly install them into the shared library. Optionally distribute new Skills to selected tools. Existing same-source Skills are preserved; failed items can be retried without reinstalling successful items. Git installation supports exact pinned commits.
+- **Unified installation flow**: Git, local, and collection sources share “Select Skills → Installation settings,” including single-Skill sources. Search, selection rows, expandable descriptions, tags, tool choices, and scope controls use a consistent layout with visible footer actions and clear disabled states. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Collection browsing and caching**: Replace the Top 300 feed and legacy collection endpoint with the website's versioned catalog. Load 12 cards at a time while scrolling, preserve loaded batches on detail return, and reuse validated index/detail caches from the same snapshot. Search matches collection metadata; category colors, icons, and consolidated repository labels clarify details. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
 
 ### Fixed
 
-- **Windows scheduled update errors**: Decode non-UTF-8 Task Scheduler output using the system OEM code page so localized errors remain readable when creating, deleting, querying, or running a task. (#181)
-
-- **Unified installation confirmation**: Git and local sources are detected before installation, including single Skills. Choose Skills in a full-height list, then continue to installation settings. Git, local, and collection installs share the two-step flow; going back preserves selections and settings. Returning preserves input and selections; cancelled scans cannot reopen confirmation. Shared-tool confirmation stays inline. Tool choices use equal-height compact controls; tags are visible by default with bounded scrolling and consistent selection colors. Tool selectors retain native square checkboxes to make multiple selection explicit.
-
-
-- Inspect local collection sources before confirmation, showing existing Skills and name conflicts through the same classifier as Git installation; revalidate when installing.
-
-- Close collection confirmation automatically after all selected Skills succeed and show a success notification; keep failed items available for retry.
-
-- **Collection selection**: Select individual Skills before installation, with select-all, selected counts, and retries restricted to the chosen items. Search preserves the selection.
-
-- Fixed collection installation rejecting pinned repository-root URLs before download; removed the misleading pending-state circle.
-
-- **Collection installation workspace**: Keep the searchable Skill list above visible tool and scope settings and an optional tag editor, with visible progress and retry results. Reuse global/project deployment and tag operations; label new installs without relabeling existing Skills. Existing same-source Skills can be distributed without reinstalling, and each pinned repository is scanned once per attempt. The Agent management Skill now documents pinned collection installation and partial-failure recovery.
-
-- **Collection confirmation from manual installation**: Opening a website collection while adding a Skill replaces the idle manual installation view with the collection confirmation, preserving entered form values.
-
-- **Linux collection link registration**: Debian installers include the desktop utilities required to register website links; protocol registration failures no longer prevent desktop startup, and package startup verification uses an isolated desktop bus session.
-
-- **Collection installation stability**: Match Windows repository directory separators and preserve installation and retry progress while other confirmations temporarily take priority.
-
-- **Website launch visibility**: On macOS, opening a valid website collection link shows, restores, and focuses the desktop window so the installation confirmation is immediately visible.
+- **Source-mirrored Skill updates**: Apply source file deletions and renames during single, batch, and same-source Git updates instead of blocking them. Reject update sources without `SKILL.md` before replacing the library copy.
+- **Windows scheduled update errors**: Decode localized Task Scheduler output with the system OEM code page instead of displaying garbled errors when creating, deleting, querying, or running tasks. (fixes [#181](https://github.com/qufei1993/skills-hub/issues/181), [PR #188](https://github.com/qufei1993/skills-hub/pull/188))
+- **Windows subdirectory Skill updates**: Fix `path not found in repo` for backslash-separated source paths. Normalize new paths, retain compatibility with existing installations, and refresh caches missing the selected directory without reinstallation or database migration. (fixes [#182](https://github.com/qufei1993/skills-hub/issues/182), [PR #189](https://github.com/qufei1993/skills-hub/pull/189))
+- **Interrupted Skill updates**: Recover persisted running status after an update worker terminates, preserve completed progress, and make Update now available again. A shared operation lock protects active workers and concurrent manual triggers. (fixes [#183](https://github.com/qufei1993/skills-hub/issues/183), [PR #192](https://github.com/qufei1993/skills-hub/pull/192))
+- **CLI adoption with excluded entries**: Fix false `PLAN_STALE` errors from `skills adopt --yes` when noncanonical source paths contain excluded entries. Preview and confirmation use the same canonical root while retaining content-change and path-escape checks. (fixes [#186](https://github.com/qufei1993/skills-hub/issues/186), [PR #191](https://github.com/qufei1993/skills-hub/pull/191))
+- **Large collection installation**: Validate native collection manifests directly, supporting up to 2,000 Skills without applying external deep-link size limits. Source, revision, duplicate, and path checks remain enforced. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Pinned repository-root sources**: Accept valid `/tree/<ref>` repository-root URLs so fixed-commit collection items reach download instead of failing source validation. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Collection conflicts and completion**: Preview existing sources and name conflicts before installation, disable conflicting rows, and restrict counts, installation, and retries to eligible selections. Revalidate before execution; close the dialog after all selected items succeed and retain failures for retry. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Installation dialog state and website launch**: Preserve inputs, selections, settings, and retry progress when returning or temporarily deferring confirmation; ignore late results from cancelled scans. Website requests reveal collection confirmation over an idle manual form, and valid macOS links restore and focus the window. Windows candidate paths are matched across directory separators. ([PR #185](https://github.com/qufei1993/skills-hub/pull/185), [PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Linux collection link registration**: Include Debian utilities required for protocol registration and keep desktop startup available if registration fails. Package startup verification uses an isolated desktop bus session. ([PR #185](https://github.com/qufei1993/skills-hub/pull/185))
+- **Project scope layout**: Align expanded project directories and recent paths with installation controls, including narrow windows. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
 
 ## [0.11.0]
 
