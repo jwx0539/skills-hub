@@ -1224,6 +1224,7 @@ export const resources = {
         targetExistsDetail:
           'Target folder already exists: {{path}}. For safety it was not overwritten.',
         toolNotInstalled: 'The selected tool is not installed. Please refresh and retry.',
+        toolPathChanged: '{{tool}} now uses a different sync directory: {{path}}. The old deployment has not been cleared. Disable and re-enable this Skill; if it still fails, report this message.',
         toolNotWritable:
           'Cannot sync to {{tool}}: permission denied on {{path}}. Please check directory permissions or run as administrator.',
         targetOverlapsSource:
@@ -2591,6 +2592,7 @@ export const resources = {
         targetExistsDetail:
           '目标目录已存在同名 Skill：{{path}}。为安全起见未覆盖。\n你可以：先手动清理该目录后重试。',
         toolNotInstalled: '未检测到该工具已安装，请刷新后重试。',
+        toolPathChanged: '{{tool}} 的同步目录已变更为 {{path}}，旧同步记录尚未清理。请先停用再启用这个 Skill；仍失败时，请反馈此提示。',
         toolNotWritable:
           '无法同步到 {{tool}}：目录 {{path}} 权限不足。请检查目录权限或以管理员身份运行。',
         targetOverlapsSource:

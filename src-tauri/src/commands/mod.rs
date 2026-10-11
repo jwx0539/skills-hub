@@ -1587,6 +1587,9 @@ fn format_deployment_error(error: crate::services::error::ServiceError) -> Strin
         ErrorCode::TargetConflict if error.details["reason"] == "not_writable" => {
             format!("TOOL_NOT_WRITABLE|{agent}|{path}")
         }
+        ErrorCode::TargetConflict if error.details["reason"] == "registered_path_changed" => {
+            format!("TOOL_PATH_CHANGED|{agent}|{path}")
+        }
         ErrorCode::TargetConflict if error.details["reason"] == "overlaps_skill_source" => format!(
             "SKILL_TARGET_OVERLAPS_SOURCE|{path}|sync target overlaps original local source"
         ),

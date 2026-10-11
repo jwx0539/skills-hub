@@ -93,6 +93,88 @@ fn deployment_requires_explicit_agents() {
 }
 
 #[test]
+fn reenable_restores_a_removed_disabled_target_at_the_current_tool_path() {
+    let f = Fixture::new();
+    fs::create_dir_all(f.home.path().join(".cline")).unwrap();
+    let skill = f.service.show_skill("demo".into()).unwrap();
+    let previous = f.home.path().join(".agents/skills/demo");
+    f.service
+        .store()
+        .upsert_skill_target(&crate::core::skill_store::SkillTargetRecord {
+            id: "legacy-cline-target".into(),
+            skill_id: skill.id.clone(),
+            tool: "cline".into(),
+            scope: "global".into(),
+            project_path: None,
+            target_path: previous.to_string_lossy().into_owned(),
+            mode: "symlink".into(),
+            status: "disabled".into(),
+            last_error: None,
+            synced_at: Some(1),
+        })
+        .unwrap();
+    f.service
+        .deploy(DeploymentRequest::global("demo", ["cline"]))
+        .unwrap();
+    let current = f.home.path().join(".cline/skills/demo");
+    assert!(current.join("SKILL.md").is_file());
+    assert!(!previous.exists());
+    let targets = f.service.show_skill("demo".into()).unwrap().targets;
+    assert_eq!(targets.len(), 1);
+    assert_eq!(targets[0].tool, "cline");
+    assert_eq!(targets[0].status, "ok");
+    let current_path = fs::canonicalize(current.parent().unwrap())
+        .unwrap()
+        .join("demo");
+    assert_eq!(targets[0].target_path, current_path.to_string_lossy());
+}
+
+#[test]
+fn changed_tool_paths_do_not_replace_existing_or_active_historical_targets() {
+    for (status, exists) in [("disabled", true), ("ok", false)] {
+        let f = Fixture::new();
+        fs::create_dir_all(f.home.path().join(".cline")).unwrap();
+        let previous = f.home.path().join(".agents/skills/demo");
+        if exists {
+            fs::create_dir_all(&previous).unwrap();
+            fs::write(previous.join("keep.txt"), "keep").unwrap();
+        }
+        let skill = f.service.show_skill("demo".into()).unwrap();
+        f.service
+            .store()
+            .upsert_skill_target(&crate::core::skill_store::SkillTargetRecord {
+                id: "legacy-cline-target".into(),
+                skill_id: skill.id.clone(),
+                tool: "cline".into(),
+                scope: "global".into(),
+                project_path: None,
+                target_path: previous.to_string_lossy().into_owned(),
+                mode: "copy".into(),
+                status: status.into(),
+                last_error: None,
+                synced_at: Some(1),
+            })
+            .unwrap();
+        let error = f
+            .service
+            .deploy(DeploymentRequest::global("demo", ["cline"]))
+            .unwrap_err();
+        assert_eq!(error.code, ErrorCode::TargetConflict);
+        assert_eq!(error.details["reason"], "registered_path_changed");
+        assert!(!f.home.path().join(".cline/skills/demo").exists());
+        if exists {
+            assert_eq!(
+                fs::read_to_string(previous.join("keep.txt")).unwrap(),
+                "keep"
+            );
+        }
+        let targets = f.service.show_skill("demo".into()).unwrap().targets;
+        assert_eq!(targets[0].target_path, previous.to_string_lossy());
+        assert_eq!(targets[0].status, status);
+    }
+}
+
+#[test]
 fn shared_directory_preview_discloses_disabled_tools_without_registering_them() {
     use crate::core::sync_engine::SyncMode;
     use crate::core::tool_adapters::{save_tool_config, CustomToolConfig, ToolConfig};

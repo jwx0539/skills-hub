@@ -344,6 +344,11 @@ function App() {
       if (raw.startsWith('TOOL_NOT_INSTALLED|')) {
         return t('errors.toolNotInstalled')
       }
+      if (raw.startsWith('TOOL_PATH_CHANGED|')) {
+        const parts = raw.split('|')
+        const tool = t(`tools.${parts[1]}`, { defaultValue: parts[1] ?? '' })
+        return t('errors.toolPathChanged', { tool, path: parts[2] ?? '' })
+      }
       if (raw.startsWith('TOOL_NOT_WRITABLE|')) {
         const parts = raw.split('|')
         return t('errors.toolNotWritable', { tool: parts[1] ?? '', path: parts[2] ?? '' })
@@ -399,10 +404,12 @@ function App() {
         errors.length > 1
           ? t('errors.moreCount', { count: errors.length - 1 })
           : ''
-      toast.error(
-        `${formatErrorMessage(`${head.title}\n${head.message}`)}${more}`,
-        { duration: 3200 },
-      )
+      const message = formatErrorMessage(head.message)
+      if (!message) return
+      toast.error(head.title, {
+        description: `${message}${more}`,
+        duration: 3200,
+      })
     },
     [formatErrorMessage, t],
   )
@@ -1904,6 +1911,7 @@ function App() {
 
   const restoreSkillSavedTargets = useCallback(
     async (skill: ManagedSkill) => {
+      const errors: { title: string; message: string }[] = []
       const seen = new Set<string>()
       for (const target of skill.targets) {
         const scope = target.scope === 'project' ? 'project' : 'global'
@@ -1912,24 +1920,34 @@ function App() {
         if (seen.has(key)) continue
         seen.add(key)
 
+        const tool = tools.find((tool) => tool.id === target.tool)
+        if (!tool) continue
         if (scope === 'global' && !installedToolIds.includes(target.tool)) continue
         if (scope === 'project') {
           if (!projectPath) continue
           if (!toolSupportsProjectScope(target.tool)) continue
         }
 
-        await invokeTauri('sync_skill_to_tool', {
-          sourcePath: skill.central_path,
-          skillId: skill.id,
-          tool: target.tool,
-          name: skill.name,
-          overwriteIfSameContent: true,
-          scope,
-          ...(scope === 'project' ? { projectPath } : {}),
-        })
+        try {
+          await invokeTauri('sync_skill_to_tool', {
+            sourcePath: skill.central_path,
+            skillId: skill.id,
+            tool: target.tool,
+            name: skill.name,
+            overwriteIfSameContent: true,
+            scope,
+            ...(scope === 'project' ? { projectPath } : {}),
+          })
+        } catch (err) {
+          errors.push({
+            title: t('errors.syncFailedTitle', { name: skill.name, tool: tool.label }),
+            message: err instanceof Error ? err.message : String(err),
+          })
+        }
       }
+      return errors
     },
-    [installedToolIds, invokeTauri, toolSupportsProjectScope],
+    [installedToolIds, invokeTauri, toolSupportsProjectScope, tools, t],
   )
 
   const handleToggleSkillEnabled = useCallback(
@@ -1948,24 +1966,26 @@ function App() {
           skillId: skill.id,
           enabled: nextEnabled,
         })
-        if (nextEnabled) {
-          await restoreSkillSavedTargets(skill)
+        const errors = nextEnabled ? await restoreSkillSavedTargets(skill) : []
+        if (errors.length > 0) {
+          showActionErrors(errors)
+        } else {
+          setSuccessToastMessage(
+            nextEnabled
+              ? t('skillEnabled', { name: skill.name })
+              : t('skillDisabled', { name: skill.name }),
+          )
         }
-        await loadManagedSkills()
-        setSuccessToastMessage(
-          nextEnabled
-            ? t('skillEnabled', { name: skill.name })
-            : t('skillDisabled', { name: skill.name }),
-        )
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err))
       } finally {
+        await loadManagedSkills()
         setLoading(false)
         setLoadingStartAt(null)
         setActionMessage(null)
       }
     },
-    [invokeTauri, loadManagedSkills, restoreSkillSavedTargets, t],
+    [invokeTauri, loadManagedSkills, restoreSkillSavedTargets, showActionErrors, t],
   )
 
   const handleToggleBulkEnabled = useCallback(async () => {
@@ -2002,7 +2022,7 @@ function App() {
             enabled: nextEnabled,
           })
           if (nextEnabled) {
-            await restoreSkillSavedTargets(skill)
+            errors.push(...(await restoreSkillSavedTargets(skill)))
           }
         } catch (err) {
           errors.push({

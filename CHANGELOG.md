@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **Re-enabling Skills after disable**: Restore saved tool selections for individual and bulk enable operations while skipping tools disabled in Tools and unavailable global tools. A failed tool no longer stops other saved targets from restoring. Restore removed disabled targets at updated tool paths while preserving existing content and active historical deployments. Refresh individual Skill state even after an error, and translate batch error codes separately from their titles; changed tool paths no longer report nonexistent directory conflicts.
+
 - **Headless Skill updates**: Prevent scheduled updates and “Update now” workers from creating extra windows or briefly appearing as an `exec` icon in the macOS Dock. Background updates continue independently of the main window. (fixes [#152](https://github.com/qufei1993/skills-hub/issues/152), [PR #193](https://github.com/qufei1993/skills-hub/pull/193))
 - **Source-mirrored Skill updates**: Apply source file deletions and renames during single, batch, and same-source Git updates instead of blocking them. Reject update sources without `SKILL.md` before replacing the library copy.
 - **Windows scheduled update errors**: Decode localized Task Scheduler output with the system OEM code page instead of displaying garbled errors when creating, deleting, querying, or running tasks. (fixes [#181](https://github.com/qufei1993/skills-hub/issues/181), [PR #188](https://github.com/qufei1993/skills-hub/pull/188))
