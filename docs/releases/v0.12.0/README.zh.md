@@ -8,6 +8,7 @@
 
 | 主题 | 用户可见变化 | 说明与 PR |
 | --- | --- | --- |
+| 所选 Skills 批量更新 | 更新选中的多个 Skills，复用 Git／本地来源，保留工具选择和分发范围。 | 逐项进度、当前项结束后取消、结果与错误详情保留、失败项重试；停用或未绑定来源的项跳过。 |
 | 合集探索 | 浏览、搜索官网合集，滚动加载并复用版本化缓存。 | [探索与搜索](collection-discovery.zh.md)；[PR #187](https://github.com/qufei1993/skills-hub/pull/187) |
 | 合集安装 | 官网唤起后选择 Skills，设置标签与分发范围，重试失败项。 | [官网唤起](website-collection-install.zh.md)、[安装工作区](collection-install-workspace.zh.md)；[PR #185](https://github.com/qufei1993/skills-hub/pull/185)、[PR #187](https://github.com/qufei1993/skills-hub/pull/187) |
 | 统一安装 | Git、本地和合集共用选择与设置两步流程。 | [安装流程](unified-installation.zh.md)；[PR #187](https://github.com/qufei1993/skills-hub/pull/187) |

@@ -8,6 +8,7 @@
 
 ### 新增
 
+- **所选 Skills 批量更新**：在技能库的批量操作栏更新多个选中的 Skills，复用原有 Git／本地来源和分发设置。显示逐项进度，取消时在当前 Skill 更新结束后停止，单项失败不影响其他项；结果数量和错误详情保留到用户关闭。跳过停用或未绑定本地来源的项，失败和未执行项继续选中，方便重试。
 - **合集探索**：桌面端浏览官网发布的合集及详情，在同页搜索相关合集和 skills.sh 单个 Skill；页头保留 Git 与本地导入入口（[PR #187](https://github.com/qufei1993/skills-hub/pull/187)）。
 - **官网合集安装**：从官网唤起桌面端，查看 Skills 和固定提交版本的 GitHub 来源，确认后安装到技能库。支持逐项选择、标签、工具及全局／项目分发，保留已有同源内容，并可重试失败项（[PR #185](https://github.com/qufei1993/skills-hub/pull/185)、[PR #187](https://github.com/qufei1993/skills-hub/pull/187)）。
 - **官网版本数据独立发布**：桌面正式发版后，将安装包链接和中英文日志更新到独立 Cloudflare Pages 数据源，无需重建官网。数据准备失败时停止部署，支持回滚到之前的生产部署（[PR #184](https://github.com/qufei1993/skills-hub/pull/184)）。

@@ -122,6 +122,16 @@ type ActiveView =
   | 'device-sync'
   | 'recycle-bin'
 type ManagementTab = 'tags' | 'tools' | 'updates'
+type BulkUpdateResult = {
+  updated: number
+  unchanged: number
+  skipped: number
+  failed: number
+  cancelled: boolean
+  remaining: number
+  errors: { name: string; message: string }[]
+  pending: { name: string; count: number }[]
+}
 type UpdaterProxyOptions = { proxy?: string }
 type UpdaterDownloadOptions = DownloadOptions & UpdaterProxyOptions
 
@@ -258,6 +268,9 @@ function App() {
   const [skillScopeState, setSkillScopeState] = useState<SkillScopeState>({})
   const [bulkMode, setBulkMode] = useState(false)
   const [bulkSelectedIds, setBulkSelectedIds] = useState<string[]>([])
+  const [bulkUpdateResult, setBulkUpdateResult] = useState<BulkUpdateResult | null>(null)
+  const [bulkUpdating, setBulkUpdating] = useState(false)
+  const bulkUpdateRunRef = useRef<{ cancelled: boolean } | null>(null)
   const [showBulkSyncModal, setShowBulkSyncModal] = useState(false)
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
   const [showBulkTagsModal, setShowBulkTagsModal] = useState(false)
@@ -1018,6 +1031,10 @@ function App() {
       bulkSelectedSkills.every((skill) => skill.enabled === false),
     [bulkSelectedSkills],
   )
+  const bulkUpdatableSkills = useMemo(
+    () => bulkSelectedSkills.filter(skill => skill.enabled !== false && !hasUnboundLocalSource(skill)),
+    [bulkSelectedSkills],
+  )
   const allVisibleBulkSelected = useMemo(() => {
     if (visibleSkills.length === 0) return false
     const selectedSet = new Set(bulkSelectedIds)
@@ -1614,12 +1631,17 @@ function App() {
 
   const sourceDetectionRequest = useRef(0)
   const handleCancelLoading = useCallback(() => {
+    if (bulkUpdateRunRef.current) {
+      bulkUpdateRunRef.current.cancelled = true
+      setActionMessage(t('bulk.updateCancelling'))
+      return
+    }
     sourceDetectionRequest.current += 1
     void invokeTauri('cancel_current_operation').catch(() => {})
     setLoading(false)
     setLoadingStartAt(null)
     setActionMessage(null)
-  }, [invokeTauri])
+  }, [invokeTauri, t])
 
   const handleCloseAdd = useCallback(() => {
     if (!loading) {
@@ -3500,6 +3522,64 @@ function App() {
     [handleUpdateManaged],
   )
 
+  const handleUpdateBulkSkills = useCallback(async () => {
+    if (loading || bulkUpdateRunRef.current || bulkUpdatableSkills.length === 0) return
+    const run = { cancelled: false }
+    bulkUpdateRunRef.current = run
+    const outcome: BulkUpdateResult = {
+      updated: 0, unchanged: 0,
+      skipped: bulkSelectedSkills.length - bulkUpdatableSkills.length,
+      failed: 0, cancelled: false, remaining: 0, errors: [], pending: [],
+    }
+    const retryIds: string[] = []
+    let completed = 0
+    setBulkUpdateResult(null)
+    setBulkUpdating(true)
+    setLoading(true)
+    setLoadingStartAt(Date.now())
+    setError(null)
+    try {
+      for (let index = 0; index < bulkUpdatableSkills.length; index++) {
+        if (run.cancelled) break
+        const skill = bulkUpdatableSkills[index]
+        setActionMessage(t('bulk.updateProgress', {
+          current: index + 1, total: bulkUpdatableSkills.length, name: skill.name,
+        }))
+        try {
+          const result = await invokeTauri<UpdateResultDto>('update_managed_skill', { skillId: skill.id })
+          if (result.changed) outcome.updated += 1
+          else outcome.unchanged += 1
+          if (result.pending_targets?.length) {
+            outcome.pending.push({ name: skill.name, count: result.pending_targets.length })
+          }
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err)
+          if (message.includes('CANCELLED|')) {
+            run.cancelled = true
+            break
+          }
+          outcome.failed += 1
+          outcome.errors.push({ name: skill.name, message })
+          retryIds.push(skill.id)
+        }
+        completed += 1
+      }
+    } finally {
+      await loadManagedSkills()
+      outcome.cancelled = run.cancelled
+      outcome.remaining = bulkUpdatableSkills.length - completed
+      retryIds.push(...bulkUpdatableSkills.slice(completed).map(skill => skill.id))
+      setBulkSelectedIds(retryIds)
+      setBulkMode(retryIds.length > 0)
+      setBulkUpdateResult(outcome)
+      bulkUpdateRunRef.current = null
+      setBulkUpdating(false)
+      setLoading(false)
+      setLoadingStartAt(null)
+      setActionMessage(null)
+    }
+  }, [bulkSelectedSkills.length, bulkUpdatableSkills, invokeTauri, loadManagedSkills, loading, t])
+
   const handleSharedCancel = useCallback(() => {
     if (loading) return
     setPendingSharedToggle(null)
@@ -3597,6 +3677,7 @@ function App() {
       />
       <LoadingOverlay
         loading={loading && !showAddModal && !showGitPickModal && !showLocalPickModal}
+        title={bulkUpdating ? t('bulk.updateTitle') : undefined}
         actionMessage={actionMessage}
         loadingStartAt={loadingStartAt}
         onCancel={handleCancelLoading}
@@ -3749,6 +3830,38 @@ function App() {
               getSkillProjects={getSkillProjects}
               t={t}
             />
+            {bulkUpdateResult ? (
+              <section className="bulk-update-result" aria-label={t('bulk.updateResultTitle')}>
+                <div className="bulk-update-result-heading">
+                  <div>
+                    <strong>{t('bulk.updateResultTitle')}</strong>
+                    <p role="status">{t('bulk.updateResult', bulkUpdateResult)}</p>
+                  </div>
+                  <button className="btn btn-secondary" type="button" onClick={() => setBulkUpdateResult(null)}>
+                    {t('close')}
+                  </button>
+                </div>
+                {bulkUpdateResult.cancelled ? <p>{t('bulk.updateCancelled', { count: bulkUpdateResult.remaining })}</p> : null}
+                {bulkUpdateResult.skipped > 0 ? <p>{t('bulk.updateSkippedHelp')}</p> : null}
+                {bulkUpdateResult.failed > 0 || bulkUpdateResult.remaining > 0 ? <p>{t('bulk.updateRetryHint')}</p> : null}
+                {bulkUpdateResult.errors.length > 0 || bulkUpdateResult.pending.length > 0 ? (
+                  <details open>
+                    <summary>{t('bulk.updateDetails')}</summary>
+                    <ul>
+                      {bulkUpdateResult.errors.map((error, index) => (
+                        <li key={`error-${index}`}>
+                          <strong>{t('bulk.updateFailedTitle', { name: error.name })}</strong>
+                          <p>{formatErrorMessage(error.message)}</p>
+                        </li>
+                      ))}
+                      {bulkUpdateResult.pending.map((pending, index) => (
+                        <li key={`pending-${index}`}>{t('deviceSync.skillUpdatedToolsPending', pending)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                ) : null}
+              </section>
+            ) : null}
             {bulkMode ? (
               <div className="bulk-action-bar">
                 <div className="bulk-action-copy">
@@ -3785,6 +3898,15 @@ function App() {
                     }
                   >
                     {t('bulk.sync')}
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => void handleUpdateBulkSkills()}
+                    disabled={loading || bulkUpdatableSkills.length === 0}
+                    title={t('bulk.updateHelp')}
+                  >
+                    {t('bulk.update')}
                   </button>
                   <button
                     className="btn btn-secondary"

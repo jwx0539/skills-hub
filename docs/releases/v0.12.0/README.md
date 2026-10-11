@@ -8,6 +8,7 @@ This version is in development. Release records cover the v0.12.0 branch and the
 
 | Topic | User-visible changes | Details and pull requests |
 | --- | --- | --- |
+| Selected Skill batch updates | Update multiple selected Skills from their Git or local sources, preserving tool selections and deployment scope. | Progress, cancellation after the current Skill, persistent result details, and retained failures for retry; disabled and unbound Skills are skipped. |
 | Collection discovery | Browse and search the website catalog, load cards while scrolling, and reuse versioned caches. | [Discovery](collection-discovery.en.md); [PR #187](https://github.com/qufei1993/skills-hub/pull/187) |
 | Collection installation | Open website links, select Skills, configure tags and deployment, and retry failures. | [Website handoff](website-collection-install.md), [installation workspace](collection-install-workspace.en.md); [PR #185](https://github.com/qufei1993/skills-hub/pull/185), [PR #187](https://github.com/qufei1993/skills-hub/pull/187) |
 | Unified installation | Git, local and collection sources share selection and settings steps. | [Installation flow](unified-installation.en.md); [PR #187](https://github.com/qufei1993/skills-hub/pull/187) |
