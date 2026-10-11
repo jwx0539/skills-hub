@@ -199,3 +199,72 @@ fn libgit2_fallback_uses_the_explicit_application_proxy() {
     proxy.join().unwrap();
     assert!(request.starts_with("CONNECT 127.0.0.1:9 HTTP/1.1"));
 }
+
+#[test]
+fn pinned_commit_install_uses_requested_revision_instead_of_branch_head() {
+    let temp = tempfile::tempdir().unwrap();
+    let source = temp.path().join("source");
+    let repo = git2::Repository::init(&source).unwrap();
+    let first = commit_file(&repo, "SKILL.md", b"first", "first");
+    commit_file(&repo, "SKILL.md", b"second", "second");
+    let dest = temp.path().join("cache");
+    let revision = first.to_string();
+    let result =
+        clone_or_pull(source.to_str().unwrap(), &dest, Some(&revision), None, None).unwrap();
+    assert_eq!(result, revision);
+    assert_eq!(fs::read_to_string(dest.join("SKILL.md")).unwrap(), "first");
+    assert!(clone_or_pull(
+        source.to_str().unwrap(),
+        &dest,
+        Some(&"b".repeat(40)),
+        None,
+        None
+    )
+    .is_err());
+}
+
+#[test]
+fn pinned_install_without_system_git_does_not_use_the_default_head() {
+    let temp = tempfile::tempdir().unwrap();
+    let source = temp.path().join("source");
+    let repo = git2::Repository::init(&source).unwrap();
+    let first = commit_file(&repo, "SKILL.md", b"first", "first");
+    commit_file(&repo, "SKILL.md", b"second", "second");
+    let dest = temp.path().join("cache");
+    assert_eq!(
+        super::clone_pinned_commit_via_libgit2(
+            source.to_str().unwrap(),
+            &dest,
+            &first.to_string(),
+            ""
+        )
+        .unwrap(),
+        first.to_string()
+    );
+    assert_eq!(fs::read_to_string(dest.join("SKILL.md")).unwrap(), "first");
+}
+
+#[test]
+fn issue_182_sparse_checkout_accepts_windows_paths_on_clone_and_update() {
+    let temp = tempfile::tempdir().unwrap();
+    let source = temp.path().join("source");
+    let repo = git2::Repository::init(&source).unwrap();
+    commit_file(&repo, "skills/a/SKILL.md", b"first", "first");
+    commit_file(&repo, "skills/b/SKILL.md", b"other", "other");
+    let dest = temp.path().join("cache");
+    for content in [b"first".as_slice(), b"second".as_slice()] {
+        let expected = commit_file(&repo, "skills/a/SKILL.md", content, "update");
+        let head = clone_or_pull_sparse(
+            source.to_str().unwrap(),
+            &dest,
+            None,
+            r"skills\a",
+            None,
+            None,
+        )
+        .unwrap();
+        assert_eq!(head, expected.to_string());
+        assert_eq!(fs::read(dest.join("skills/a/SKILL.md")).unwrap(), content);
+        assert!(!dest.join("skills/b/SKILL.md").exists());
+    }
+}

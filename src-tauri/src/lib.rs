@@ -22,8 +22,21 @@ use services::skills_hub::SkillsHubService;
 use tauri::Manager;
 use tauri_plugin_log::{Target, TargetKind};
 
-fn runtime_context() -> tauri::Context<tauri::Wry> {
-    tauri::generate_context!()
+fn is_background_update_args(args: impl IntoIterator<Item = String>) -> bool {
+    args.into_iter()
+        .collect::<Vec<_>>()
+        .windows(2)
+        .any(|pair| pair[0] == "--background-task" && pair[1] == "update-skills")
+}
+
+fn runtime_context(is_background_update: bool) -> tauri::Context<tauri::Wry> {
+    let mut context = tauri::generate_context!();
+    if is_background_update {
+        for window in &mut context.config_mut().app.windows {
+            window.create = false;
+        }
+    }
+    context
 }
 
 fn runtime_paths<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> anyhow::Result<RuntimePaths> {
@@ -49,16 +62,48 @@ pub(crate) fn runtime_paths_for_tauri<R: tauri::Runtime>(
     runtime_paths(app)
 }
 
+#[cfg(any(target_os = "macos", test))]
+fn activate_collection_link(links: &[String], activate: impl FnOnce()) {
+    if links
+        .iter()
+        .any(|link| commands::collection_link::parse_link(link).is_ok())
+    {
+        activate();
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[cfg(debug_assertions)]
     let _ = dotenvy::dotenv();
-    tauri::Builder::default()
+    let is_background_update = is_background_update_args(std::env::args());
+    let builder = tauri::Builder::default();
+    #[cfg(desktop)]
+    let builder = if std::env::args().any(|arg| arg == "--background-task") {
+        builder
+    } else {
+        builder.plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
+    };
+    let app = builder
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
         .plugin(core::app_updater::builder().build())
-        .setup(|app| {
+        .setup(move |app| {
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
+            if !cfg!(debug_assertions) {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                if app.deep_link().register_all().is_err() {
+                    eprintln!("Could not register the Skills Hub collection link protocol.");
+                }
+            }
             app.handle().plugin(
                 tauri_plugin_log::Builder::default()
                     .level(log::LevelFilter::Info)
@@ -70,10 +115,6 @@ pub fn run() {
                     .build(),
             )?;
 
-            let is_background_update = std::env::args()
-                .collect::<Vec<_>>()
-                .windows(2)
-                .any(|pair| pair[0] == "--background-task" && pair[1] == "update-skills");
             let force_background_update = std::env::args().any(|arg| arg == "--force");
 
             let paths = runtime_paths(app.handle()).map_err(tauri::Error::from)?;
@@ -84,10 +125,6 @@ pub fn run() {
             app.manage(service.clone());
 
             if is_background_update {
-                #[cfg(target_os = "macos")]
-                {
-                    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-                }
                 let run_result = (|| -> anyhow::Result<_> {
                     let _operation_lock =
                         OperationLock::acquire(&paths, OperationKind::AutoUpdate)?;
@@ -241,6 +278,8 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::collection_link::parse_collection_link,
+            commands::collection_link::validate_collection_manifest,
             commands::get_central_repo_path,
             commands::preview_central_repo_path_change,
             commands::set_central_repo_path,
@@ -270,6 +309,7 @@ pub fn run() {
             commands::install_local_selection,
             commands::install_git,
             commands::list_git_skills_cmd,
+            commands::preview_git_skills_local,
             commands::install_git_selection,
             commands::sync_skill_dir,
             commands::sync_skill_to_tool,
@@ -294,7 +334,8 @@ pub fn run() {
             commands::set_skill_tags,
             commands::get_untagged_skill_ids,
             commands::delete_managed_skill,
-            commands::get_featured_skills,
+            commands::get_website_collections,
+            commands::cache_website_collections,
             commands::search_skills_online,
             commands::list_skill_files,
             commands::read_skill_file,
@@ -332,19 +373,58 @@ pub fn run() {
                 window.app_handle().exit(0);
             }
         })
-        .build(runtime_context())
-        .expect("error while running tauri application")
-        .run(|_app, _event| {});
+        .build(runtime_context(is_background_update))
+        .expect("error while running tauri application");
+    #[cfg(target_os = "macos")]
+    let app = {
+        let mut app = app;
+        if is_background_update {
+            // Configure the runtime before run(): setup executes after macOS activates the app.
+            app.set_activation_policy(tauri::ActivationPolicy::Prohibited);
+        }
+        app
+    };
+    app.run(|_app, _event| {
+        #[cfg(target_os = "macos")]
+        if let tauri::RunEvent::Opened { urls } = _event {
+            let links: Vec<String> = urls.iter().map(ToString::to_string).collect();
+            activate_collection_link(&links, || {
+                let _ = _app.show();
+                if let Some(window) = _app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.unminimize();
+                    let _ = window.set_focus();
+                }
+            });
+        }
+    });
 }
 
 #[cfg(test)]
 mod environment_tests {
     #[test]
+    fn collection_open_activates_only_for_valid_install_links() {
+        let manifest = serde_json::json!({"v":1,"title":"Collection","sources":[{"repo":"owner/repo","ref":"a".repeat(40)}],"skills":[{"name":"design","path":"skills/design","source":0}]});
+        let valid = format!(
+            "skills-hub://install?manifest={}",
+            urlencoding::encode(&manifest.to_string())
+        );
+        let activated = std::cell::Cell::new(false);
+        super::activate_collection_link(&[valid], || activated.set(true));
+        assert!(activated.get());
+        activated.set(false);
+        super::activate_collection_link(&["skills-hub://install?manifest=invalid".into()], || {
+            activated.set(true)
+        });
+        assert!(!activated.get());
+    }
+
+    #[test]
     fn desktop_identity_keeps_the_shared_cli_data_identifier() {
         let packaged: serde_json::Value =
             serde_json::from_str(include_str!("../tauri.conf.json")).unwrap();
         let identifier = packaged["identifier"].as_str().unwrap();
-        let runtime = super::runtime_context();
+        let runtime = super::runtime_context(false);
         let expected_identity = if cfg!(skills_hub_local_bundle) {
             "com.qufei1993.skillshub.local-test"
         } else {
@@ -352,5 +432,67 @@ mod environment_tests {
         };
         assert_eq!(runtime.config().identifier, expected_identity);
         assert_eq!(identifier, super::core::runtime_paths::PRODUCT_IDENTIFIER);
+    }
+}
+
+#[cfg(test)]
+mod background_startup_tests {
+    #[test]
+    fn background_update_does_not_create_any_configured_window() {
+        let context = super::runtime_context(true);
+        assert!(!context.config().app.windows.is_empty());
+        assert!(context
+            .config()
+            .app
+            .windows
+            .iter()
+            .all(|window| !window.create));
+    }
+
+    #[test]
+    fn normal_startup_preserves_packaged_windows() {
+        let packaged: tauri::Config =
+            serde_json::from_str(include_str!("../tauri.conf.json")).unwrap();
+        let context = super::runtime_context(false);
+        assert_eq!(context.config().app.windows, packaged.app.windows);
+        assert!(context
+            .config()
+            .app
+            .windows
+            .iter()
+            .any(|window| window.create && window.visible));
+    }
+
+    #[test]
+    fn only_the_complete_update_task_marker_selects_background_startup() {
+        for (args, expected) in [
+            (vec!["app", "--background-task", "update-skills"], true),
+            (
+                vec!["app", "--background-task", "update-skills", "--force"],
+                true,
+            ),
+            (
+                vec!["app", "--force", "--background-task", "update-skills"],
+                true,
+            ),
+            (vec!["app"], false),
+            (vec!["app", "--force"], false),
+            (vec!["app", "--background-task"], false),
+            (vec!["app", "--background-task", "other"], false),
+            (vec!["app", "update-skills", "--background-task"], false),
+            (
+                vec![
+                    "app",
+                    "skillshub://install-collection?url=https://example.com",
+                ],
+                false,
+            ),
+        ] {
+            assert_eq!(
+                super::is_background_update_args(args.iter().map(|arg| arg.to_string())),
+                expected,
+                "{args:?}"
+            );
+        }
     }
 }

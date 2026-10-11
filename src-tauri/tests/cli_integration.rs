@@ -508,18 +508,16 @@ fn writes_respect_desktop_lock_and_unknown_schema_while_diagnostics_work() {
 }
 
 #[test]
-fn destructive_update_is_held_back_and_safe_update_reopens() {
+fn source_mirror_update_removes_extra_files_and_batch_update_reopens() {
     let fixture = Fixture::new();
     let installed = fixture.install("demo");
     let central = Path::new(installed["central_path"].as_str().unwrap());
     fs::write(central.join("user-file.txt"), "keep").unwrap();
-    fixture.json(&["skills", "update", "demo"], Some(("UPDATE_HELD_BACK", 4)));
-    assert!(central.join("user-file.txt").exists());
-    assert_eq!(
-        fixture.json(&["skills", "check", "--all"], None)["data"][0]["held_back"],
-        true
-    );
-    fs::remove_file(central.join("user-file.txt")).unwrap();
+    let check = fixture.json(&["skills", "check", "--all"], None);
+    assert_eq!(check["data"][0]["held_back"], false);
+    assert_eq!(check["data"][0]["removal_count"], 1);
+    fixture.json(&["skills", "update", "demo"], None);
+    assert!(!central.join("user-file.txt").exists());
     let source = fixture.root.path().join("sources/demo/SKILL.md");
     fs::write(
         &source,
@@ -733,16 +731,9 @@ fn batch_update_checks_every_skill_before_changing_any_skill() {
         "new content",
     )
     .unwrap();
-    fs::write(
-        Path::new(held["central_path"].as_str().unwrap()).join("personal.txt"),
-        "keep",
-    )
-    .unwrap();
+    fs::remove_file(fixture.root.path().join("sources/held/SKILL.md")).unwrap();
     let before = fixture.service().list_skills().unwrap();
-    fixture.json(
-        &["skills", "update", "--all"],
-        Some(("UPDATE_HELD_BACK", 4)),
-    );
+    fixture.json(&["skills", "update", "--all"], Some(("INVALID_SOURCE", 2)));
     assert_eq!(fs::read(&safe_central).unwrap(), original);
     assert!(!safe_central.parent().unwrap().join("new.txt").exists());
     assert_eq!(fixture.store().list_skills().unwrap(), before_skills);
@@ -754,8 +745,8 @@ fn batch_update_checks_every_skill_before_changing_any_skill() {
         );
     }
     assert_eq!(
-        fs::read(Path::new(held["central_path"].as_str().unwrap()).join("personal.txt")).unwrap(),
-        b"keep"
+        fs::read(Path::new(held["central_path"].as_str().unwrap()).join("SKILL.md")).unwrap(),
+        b"---\nname: held\ndescription: Integration test\n---\nBody\n"
     );
 }
 

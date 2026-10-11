@@ -4,7 +4,7 @@ The recommended flow is Settings → AI management → Enable in one click in th
 
 Standalone installation is a non-recommended alternative for users who do not use the desktop app. The Bash and PowerShell installers reuse the versioned native CLI assets and SHA-256 files from the latest stable release in the public `qufei1993/skills-hub` repository. They do not publish npm packages, require Node.js, or change the desktop bridge directories. Users can repeat the same command to upgrade.
 
-See the [English installation guide](../../../README.md#standalone-cli-installation) or [中文安装说明](../../README.zh.md#独立安装-cli) for commands, destinations, and limitations. The scripts must be merged into `main`, and a compatible CLI release must be publicly available in the resource repository before those commands work.
+See the [official CLI installation guide](https://aiskillshub.link/docs/cli) for commands, destinations, and limitations. The scripts must be merged into `main`, and a compatible CLI release must be publicly available in the resource repository before those commands work.
 
 Downloads and checksums are verified before replacing an existing executable. Installation stages replacement on the destination filesystem. Bash updates Bash/Zsh profiles idempotently; PowerShell updates user and session PATH. Unsupported systems or architectures fail explicitly. Independent installation does not install the official management Skill or provide desktop-only settings and sync features.
 

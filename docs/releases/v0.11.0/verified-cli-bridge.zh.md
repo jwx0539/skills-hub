@@ -23,7 +23,7 @@ npm run cli:prepare -- --target darwin-arm64 --debug
 npm run check
 ```
 
-`tauri:dev` 和 `tauri:build:local` 自动准备本地 CLI；常规 `tauri:build` 必须提供匹配的 release 清单，详见[构建说明](../../README.zh.md#构建)。
+`tauri:dev` 和 `tauri:build:local` 自动准备本地 CLI；常规 `tauri:build` 必须提供匹配的 release 清单，详见[构建说明](../../development.zh.md#构建)。
 
 ## 发布验证
 

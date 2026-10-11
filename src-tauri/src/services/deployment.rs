@@ -449,7 +449,12 @@ impl SkillsHubService {
                 }) {
                     if target_location(Path::new(&old.target_path)).ok().as_ref() != Some(&physical)
                     {
-                        return Err(conflict(&agent.key, &path, "registered_path_changed"));
+                        let removed_disabled_target = old.status == "disabled"
+                            && std::fs::symlink_metadata(&old.target_path)
+                                .is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound);
+                        if !removed_disabled_target {
+                            return Err(conflict(&agent.key, &path, "registered_path_changed"));
+                        }
                     }
                 }
             }

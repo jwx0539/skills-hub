@@ -1,7 +1,7 @@
 {
   "name": "skills-hub",
   "private": true,
-  "version": "0.11.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173 --strictPort",
@@ -13,7 +13,7 @@
     "rust:clippy": "cd src-tauri && cargo clippy --all-targets --all-features -- -D warnings",
     "rust:test": "cd src-tauri && cargo test --features cli",
     "network:check": "node --test scripts/check-network-boundaries.test.mjs && node scripts/check-network-boundaries.mjs",
-    "check": "npm run network:check && npm run lint && npm run test && npm run build && npm run rust:fmt:check && npm run rust:clippy && npm run rust:test",
+    "check": "npm run test:release-data && npm run network:check && npm run lint && npm run test && npm run build && npm run rust:fmt:check && npm run rust:clippy && npm run rust:test",
     "preview": "vite preview",
     "version:set": "node scripts/version.mjs set",
     "version:sync": "node scripts/version.mjs sync",
@@ -38,12 +38,14 @@
     "tauri:build:local:win:all": "npm run tauri:build:local -- --bundles msi,nsis",
     "tauri:build:local:linux:deb": "npm run tauri:build:local -- --bundles deb",
     "tauri:build:local:linux:appimage": "npm run tauri:build:local -- --bundles appimage",
-    "tauri:build:local:linux:all": "npm run tauri:build:local -- --bundles deb,appimage"
+    "tauri:build:local:linux:all": "npm run tauri:build:local -- --bundles deb,appimage",
+    "test:release-data": "node --test scripts/collect-release-data.checks.cjs scripts/publish-release-data.checks.mjs"
   },
   "dependencies": {
     "@lobehub/icons-static-svg": "^1.91.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tauri-apps/api": "^2.9.1",
+    "@tauri-apps/plugin-deep-link": "2.4.6",
     "@tauri-apps/plugin-dialog": "^2.5.3",
     "@tauri-apps/plugin-opener": "^2.5.3",
     "@tauri-apps/plugin-process": "^2.3.1",

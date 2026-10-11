@@ -1,6 +1,8 @@
 # Interrupted Skill update recovery
 
-Fixes [#183](https://github.com/qufei1993/skills-hub/issues/183).
+[简体中文](auto-update-recovery.zh.md)
+
+Fixes [#183](https://github.com/qufei1993/skills-hub/issues/183) · [PR #192](https://github.com/qufei1993/skills-hub/pull/192).
 
 A terminated update worker could leave its persisted status as `running`, keeping Update now disabled after restarting the desktop. Windows task registration did not indicate worker liveness, and runtime polling bypassed the old macOS-only display correction.
 

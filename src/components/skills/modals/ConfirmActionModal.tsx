@@ -1,32 +1,38 @@
 import { memo, useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
-import { Trash2, TriangleAlert } from 'lucide-react'
+import { PackagePlus, Trash2, TriangleAlert } from 'lucide-react'
 
 type ConfirmActionModalProps = {
+  intent?: 'default' | 'danger'
   recoverable?: boolean
   open: boolean
   loading: boolean
   title: string
   body: ReactNode
+  footerSummary?: ReactNode
   cancelLabel: string
   confirmLabel: string
   confirmDisabled?: boolean
   returnFocusRef?: RefObject<HTMLElement | null>
   onRequestClose: () => void
+  onCancel?: () => void
   onConfirm: () => void
 }
 
 const ConfirmActionModal = ({
   open,
+  intent = 'danger',
   recoverable = false,
   loading,
   title,
   body,
+  footerSummary,
   cancelLabel,
   confirmLabel,
   confirmDisabled = false,
   returnFocusRef,
   onRequestClose,
   onConfirm,
+  onCancel,
 }: ConfirmActionModalProps) => {
   const titleId = useId()
   const descriptionId = useId()
@@ -47,9 +53,9 @@ const ConfirmActionModal = ({
     const focusableSelector =
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
     const focusableElements = () =>
-      Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? [])
+      Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? []).filter(element => !element.closest('[hidden]') && !element.matches(':disabled'))
 
-    focusableElements()[0]?.focus()
+    focusableElements()[0]?.focus({ preventScroll: true })
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !loadingRef.current) {
         event.preventDefault()
@@ -65,10 +71,10 @@ const ConfirmActionModal = ({
       }
       const first = elements[0]
       const last = elements[elements.length - 1]
-      if (event.shiftKey && document.activeElement === first) {
+      if (event.shiftKey && (document.activeElement === first || !elements.includes(document.activeElement as HTMLElement))) {
         event.preventDefault()
         last.focus()
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && (document.activeElement === last || !elements.includes(document.activeElement as HTMLElement))) {
         event.preventDefault()
         first.focus()
       }
@@ -93,7 +99,7 @@ const ConfirmActionModal = ({
     >
       <div
         ref={dialogRef}
-        className={`modal modal-delete${recoverable ? ' modal-recoverable-delete' : ''}`}
+        className={`modal modal-delete${recoverable ? ' modal-recoverable-delete' : ''}${intent === 'default' ? ' modal-collection-install' : ''}`}
         tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
@@ -103,7 +109,7 @@ const ConfirmActionModal = ({
       >
         <div className="modal-body delete-body">
           <div className="delete-title" id={titleId}>
-            {recoverable ? <Trash2 size={20} /> : <TriangleAlert size={20} />}
+            {intent === 'default' ? <PackagePlus size={20} /> : recoverable ? <Trash2 size={20} /> : <TriangleAlert size={20} />}
             {title}
           </div>
           <div className="delete-desc" id={descriptionId}>
@@ -111,16 +117,17 @@ const ConfirmActionModal = ({
           </div>
         </div>
         <div className="modal-footer">
+          {footerSummary}
           <button
             className="btn btn-secondary"
             type="button"
-            onClick={onRequestClose}
+            onClick={onCancel ?? onRequestClose}
             disabled={loading}
           >
             {cancelLabel}
           </button>
           <button
-            className={`btn ${recoverable ? 'btn-danger' : 'btn-danger-solid'}`}
+            className={`btn ${intent === 'default' ? 'btn-primary' : recoverable ? 'btn-danger' : 'btn-danger-solid'}`}
             type="button"
             onClick={onConfirm}
             disabled={loading || confirmDisabled}

@@ -23,7 +23,7 @@ npm run cli:prepare -- --target darwin-arm64 --debug
 npm run check
 ```
 
-`tauri:dev` and `tauri:build:local` prepare their local CLI automatically. Regular `tauri:build` requires the matching release manifest; see the [build guide](../../../README.md#build).
+`tauri:dev` and `tauri:build:local` prepare their local CLI automatically. Regular `tauri:build` requires the matching release manifest; see the [build guide](../../development.en.md#build).
 
 ## Release validation
 

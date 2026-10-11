@@ -2,6 +2,8 @@
 
 Thanks for taking the time to contribute to Skills Hub!
 
+See [Development and builds](docs/development.en.md) for OAuth configuration, local test packages, and release build requirements. User documentation is maintained on the [Skills Hub website](https://aiskillshub.link/docs).
+
 ## Development Requirements
 
 - Node.js 18+ (recommended: 20+)

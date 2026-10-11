@@ -138,14 +138,7 @@ impl SkillsHubService {
                     self.preflight_update_targets(&skill.id)?;
                 }
                 for skill in &skills {
-                    let check = self.check_updates(SkillSelector::Id(skill.id.clone()))?;
-                    if check.held_back {
-                        return Err(ServiceError::new(
-                            ErrorCode::UpdateHeldBack,
-                            "batch update would remove user files",
-                            json!({"skill_id": skill.id, "removal_count": check.removal_count}),
-                        ));
-                    }
+                    self.check_updates(SkillSelector::Id(skill.id.clone()))?;
                 }
                 let mut updated = Vec::new();
                 for skill in skills {

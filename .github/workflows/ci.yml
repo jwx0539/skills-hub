@@ -40,6 +40,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run test:release-data
       - run: npm run version:check
       - name: Validate CLI and desktop distribution pipeline
         run: node --test scripts/cli-manifest.test.mjs scripts/verify-cli-release.test.mjs scripts/publish-cli-release.test.mjs scripts/verify-desktop-bundle.test.mjs scripts/release-workflow.test.mjs scripts/reuse-cli-build.test.mjs scripts/linux-release.test.mjs scripts/release-downloads.test.mjs scripts/check-ai-management-native.test.mjs
@@ -188,6 +189,13 @@ jobs:
           New-Item -ItemType Directory -Force target | Out-Null
           rustc --edition=2021 scripts/windows-console-probe.rs --out-dir target
           .\target\windows-console-probe.exe
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare debug CLI for scheduler regressions
+        run: node scripts/prepare-cli-sidecar.mjs --target x86_64-pc-windows-msvc --debug
+      - name: Verify localized Task Scheduler output on Windows
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml --target x86_64-pc-windows-msvc --lib windows_scheduler_
       - name: Verify guarded CLI file replacement on Windows
         shell: pwsh
         run: |

@@ -1919,6 +1919,11 @@ fn deployment_errors_preserve_desktop_prefixes() {
             "TARGET_EXISTS|/tools/demo",
         ),
         (
+            ErrorCode::TargetConflict,
+            serde_json::json!({"agent":"cline","path":"/tools/demo","reason":"registered_path_changed"}),
+            "TOOL_PATH_CHANGED|cline|/tools/demo",
+        ),
+        (
             ErrorCode::PlanStale,
             serde_json::json!({}),
             "PLAN_STALE|deployment state changed",

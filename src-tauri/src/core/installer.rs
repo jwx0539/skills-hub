@@ -954,7 +954,7 @@ fn scan_skill_candidates_in_dir(repo_dir: &Path) -> Vec<(String, String)> {
             .strip_prefix(repo_dir)
             .unwrap_or(&p)
             .to_string_lossy()
-            .to_string();
+            .replace('\\', "/");
         out.push((name, rel));
     }
     out
@@ -1336,11 +1336,6 @@ fn update_managed_skill_from_source_inner(
         });
     }
     let changed = previous_content_hash != next_content_hash;
-    let removal_count = count_update_removals(store, skill_id, &central_path, &staging_dir)?;
-    if changed && removal_count > 0 {
-        let _ = std::fs::remove_dir_all(&staging_dir);
-        anyhow::bail!("UPDATE_HELD_BACK|{removal_count}");
-    }
     let description = parse_skill_md(&staging_dir.join("SKILL.md"))
         .and_then(|(_, desc)| desc)
         .or(record.description.clone());
@@ -1551,7 +1546,11 @@ fn stage_skill_source(
                 .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("missing source_ref for git skill"))?;
             let parsed = parse_github_url(repo_url);
-            let (repo_dir, revision) = if let Some(subpath) = record.source_subpath.as_deref() {
+            let stored_subpath = record
+                .source_subpath
+                .as_deref()
+                .map(|path| path.replace('\\', "/"));
+            let (repo_dir, revision) = if let Some(subpath) = stored_subpath.as_deref() {
                 clone_to_cache_subpath(
                     paths,
                     store,
@@ -1569,8 +1568,7 @@ fn stage_skill_source(
                     cancel,
                 )?
             };
-            let mut resolved_subpath = record
-                .source_subpath
+            let mut resolved_subpath = stored_subpath
                 .as_deref()
                 .or(parsed.subpath.as_deref())
                 .map(str::to_string);
@@ -1624,6 +1622,13 @@ fn stage_skill_source(
         }
     })();
 
+    let staged = staged.and_then(|result| {
+        anyhow::ensure!(
+            staging_dir.join("SKILL.md").is_file(),
+            "SKILL_INVALID|missing_skill_md"
+        );
+        Ok(result)
+    });
     match staged {
         Ok((revision, subpath)) => Ok((staging_dir, revision, subpath)),
         Err(error) => {
@@ -1705,7 +1710,7 @@ fn ignored_update_entry(path: &Path, metadata: &std::fs::Metadata) -> bool {
         || (metadata.is_dir() && file_name == Some(std::ffi::OsStr::new("__pycache__")))
 }
 
-#[derive(Clone, Debug, serde::Serialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct GitSkillCandidate {
     pub name: String,
     pub description: Option<String>,
@@ -1761,7 +1766,7 @@ pub fn list_git_skills(
                     .strip_prefix(&repo_dir)
                     .unwrap_or(&p)
                     .to_string_lossy()
-                    .to_string();
+                    .replace('\\', "/");
                 out.push(GitSkillCandidate {
                     name,
                     description: desc,
@@ -1791,7 +1796,7 @@ pub fn list_git_skills(
             .strip_prefix(&repo_dir)
             .unwrap_or(&p)
             .to_string_lossy()
-            .to_string();
+            .replace('\\', "/");
         out.push(GitSkillCandidate {
             name,
             description: desc,
@@ -2140,6 +2145,8 @@ pub fn install_git_skill_from_selection(
     name: Option<String>,
     cancel: Option<&CancelToken>,
 ) -> Result<InstallResult> {
+    let normalized_subpath = subpath.replace('\\', "/");
+    let subpath = normalized_subpath.as_str();
     let parsed = parse_github_url(repo_url);
     let user_provided_name = name.is_some();
     let mut display_name = name.unwrap_or_else(|| {
@@ -2364,6 +2371,8 @@ fn clone_to_cache_subpath(
     subpath: &str,
     cancel: Option<&CancelToken>,
 ) -> Result<(PathBuf, String)> {
+    let normalized_subpath = subpath.replace('\\', "/");
+    let subpath = normalized_subpath.as_str();
     let started = std::time::Instant::now();
     let cache_root = &paths.git_cache_dir;
     std::fs::create_dir_all(cache_root)
@@ -2375,7 +2384,7 @@ fn clone_to_cache_subpath(
     let lock = GIT_CACHE_LOCK.get_or_init(|| Mutex::new(()));
     let _guard = lock.lock().unwrap_or_else(|err| err.into_inner());
 
-    if repo_dir.join(".git").exists() {
+    if repo_dir.join(".git").exists() && repo_dir.join(subpath).is_dir() {
         if let Ok(meta) = std::fs::read_to_string(&meta_path) {
             if let Ok(meta) = serde_json::from_str::<RepoCacheMeta>(&meta) {
                 if let Some(head) = meta.head {

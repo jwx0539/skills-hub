@@ -3,6 +3,141 @@ import { ko } from './ko'
 export const resources = {
   en: {
     translation: {
+      installFlow: {"source": "Installation source", "sourceStep": "Choose source", "confirmStep": "2. Confirm installation", "detect": "Continue", "detectHint": "Find Skills first. Review the list and choose tags, tools, and scope before installing.", "back": "Back", "projectCount": "Project · {{count}} directories", "confirmTitle": "Confirm installation", "detecting": "Detecting Skills…", "confirmTools": "Confirm the shared tool selection first.", "chooseTags": "Choose tags", "collapseTags": "Done", "noTags": "No tags", "selectStep": "Select Skills", "settingsStep": "Installation settings", "next": "Next"},
+      discovery: {
+  "loadMoreCollections": "Load more collections",
+  "showingCollections": "Showing {{shown}} of {{total}} collections",
+  "intro": "Find the right Skills for your next task.",
+  "importIntro": "Choose a source, then set up where to use your Skills.",
+  "git": "Install from Git",
+  "local": "Import local folder",
+  "back": "Back to discovery",
+  "search": "Search Skills, collections, or a task…",
+  "clear": "Clear search",
+  "try": "Try",
+  "topics": {
+    "frontend": "Frontend design",
+    "testing": "Testing",
+    "video": "Video creation",
+    "marketing": "Marketing"
+  },
+  "collections": "Explore collections",
+  "collectionIntro": "Skills grouped around a task. Browse together, install what you need.",
+  "matchingCollections": "Matching collections",
+  "view": "View {{name}}",
+  "results": "Skills",
+  "searchMore": "Looking for a specific Skill? Search above to explore skills.sh.",
+  "searchHelp": "Try a different keyword, or install directly from a Git repository.",
+  "installError": "Unable to open installation. Please try again."
+},
+      "catalog": {
+  "browse": "Browse",
+  "collections": "Collections",
+  "skills": "Skills search",
+  "searchCollections": "Search collections or use cases…",
+  "searchSkills": "Search Skills on skills.sh…",
+  "source": "Curated collections from the Skills Hub website. Choose a collection to review and install.",
+  "searchHint": "Search skills.sh with at least 2 characters.",
+  "back": "All collections",
+  "loadError": "Unable to load collections. Check your connection and retry.",
+  "retry": "Retry",
+  "chooseInstall": "Choose Skills · {{count}}",
+  "conflict": "This collection contains conflicting sources and cannot be installed.",
+  "included": "Included Skills",
+  "count": "{{count}} Skills",
+  "view": "View collection",
+  "empty": "No matching collections.",
+  "installs": "{{count}} installs",
+  "editorialAuthor": "Curated by Skills Hub",
+  "recommendedBy": "Recommended by {{name}}",
+  "licenseNeedsReview": "License pending review"
+},
+      collectionInstall: {
+  "title": "Install collection",
+  "checking": "Checking library…",
+  "conflictState": "Name conflict",
+  "previewFailed": "Unable to check your library. Retry before installing.",
+  "previewRetry": "Retry check",
+  "success": "Collection installed successfully: {{count}} Skills",
+  "intro": "Confirm these {{count}} Skills and their sources before installing into your library.",
+  "listLabel": "Skills to install",
+  "close": "Close",
+  "install": "Install Skills",
+  "installCount": "Install {{count}} Skills",
+  "selectAll": "Select all",
+  "selectSkill": "Select {{name}}",
+  "selected": "{{count}} / {{total}} selected",
+  "notSelected": "Not selected",
+  "retry": "Retry failed items",
+  "done": "Done",
+  "tools": "Also use in tools (optional)",
+  "scope": "Choose tools to use these Skills in. Leave unchecked to keep them in your library only.",
+  "existingNote": "Existing Skills from the same source are kept. Conflicts will not be overwritten.",
+  "working": "Installing…",
+  "pending": "Ready to install",
+  "installed": "Installed",
+  "existing": "Already in library",
+  "failed": "Failed",
+  "missing": "The requested Skill was not found at this revision.",
+  "conflict": "A different Skill uses this name. Resolve the conflict in your library first.",
+  "busy": "Finish the current operation or close the installation dialog before opening another collection.",
+  "linkErrors": {
+    "tooLarge": {
+      "title": "The installation list is too large",
+      "help": "Select fewer Skills on the website and install them in batches, or find this collection in Add Skills and install it there."
+    },
+    "tooManySkills": {
+      "title": "Too many Skills selected",
+      "help": "This version supports up to 2,000 Skills at a time. Select fewer Skills and install them in batches."
+    },
+    "tooManySources": {
+      "title": "Too many repository sources selected",
+      "help": "This version supports up to 100 repository sources at a time. Select fewer Skills and install them in batches."
+    },
+    "unsupported": {
+      "title": "This version cannot read the installation list",
+      "help": "Update Skills Hub, then open the collection from the website again. If this still happens after updating, report the collection name."
+    },
+    "empty": {
+      "title": "No Skills selected for installation",
+      "help": "Select at least one Skill on the website, then click Install in Skills Hub."
+    },
+    "duplicate": {
+      "title": "The installation list contains duplicate Skills or names",
+      "help": "Deselect duplicate Skills or Skills with the same name on the website, then open the installation list again."
+    },
+    "unsafe": {
+      "title": "This collection has incorrect installation information",
+      "help": "A repository source, Skill name, or directory does not meet installation requirements. Report the collection name so its information can be corrected."
+    },
+    "invalid": {
+      "title": "Unable to read the installation list",
+      "help": "Return to the collection page on the website, select the Skills again, and click Install in Skills Hub. If this still fails, report the collection name."
+    },
+    "unavailable": {
+      "title": "Unable to receive the website installation request",
+      "help": "Restart Skills Hub, then click Install in Skills Hub on the website again."
+    },
+    "failed": {
+      "title": "Unable to open the installation confirmation right now",
+      "help": "Open this collection again. If this still fails, restart Skills Hub and retry."
+    }
+  },
+  "refreshFailed": "Installation finished, but the library could not refresh. Reopen My Skills.",
+  "search": "Search Skills",
+  "noMatches": "No matching Skills. Your selection is unchanged.",
+  "newTag": "New tag",
+  "tagHint": "Tags apply only to newly installed Skills, so you can find and remove this batch later.",
+  "settings": "Installation settings",
+  "total": "{{count}} Skills",
+  "progress": "{{count}} / {{total}} completed",
+  "failures": "{{count}} failed",
+  "toolCount": "{{count}} tools selected",
+  "libraryOnly": "Install into library only",
+  "progressLabel": "Installation progress",
+  "noTools": "No available tools. Skills will be installed into your library.",
+  "sharedTools": "Tools sharing the same directory are selected together."
+},
       appName: 'Skills Hub',
       unknown: 'unknown',
       languageShort: {
@@ -629,6 +764,18 @@ export const resources = {
         clear: 'Clear',
         tags: 'Tags',
         sync: 'Tools',
+        update: 'Update',
+        updateTitle: 'Updating Skills...',
+        updateHelp: 'Update selected enabled Skills with a bound source. Disabled or unbound Skills are skipped.',
+        updateProgress: '{{current}}/{{total}} Updating {{name}} ...',
+        updateCancelling: 'Stopping after the current Skill finishes updating...',
+        updateResultTitle: 'Batch update results',
+        updateResult: 'Updated {{updated}}, unchanged {{unchanged}}, skipped {{skipped}}, failed {{failed}}.',
+        updateCancelled: 'Stopped. {{count}} Skills have not been updated.',
+        updateSkippedHelp: 'Disabled Skills and Skills without a bound source were skipped. Enable them or bind their source before updating.',
+        updateRetryHint: 'Failed and unprocessed Skills remain selected. Click Update to retry.',
+        updateDetails: 'Items needing attention',
+        updateFailedTitle: 'Failed to update {{name}}',
         enable: 'Enable',
         disable: 'Disable',
         delete: 'Delete',
@@ -1026,11 +1173,9 @@ export const resources = {
       searchTab: 'Search',
       exploreTab: 'Explore',
       exploreFilterPlaceholder: 'Filter or search skills online...',
-      exploreEmpty: 'No featured skills available.',
-      exploreLoading: 'Loading featured skills...',
+      exploreEmpty: 'No collections available.',
+      exploreLoading: 'Loading collections…',
       exploreSource: 'Data from',
-      exploreSourceHint: 'Featured: top 300 from curated GitHub repos · Search: more results via skills.sh · Type 2+ characters to search',
-      exploreFeaturedTitle: 'Featured',
       exploreOnlineTitle: 'Online Results',
       searchLoading: 'Searching skills.sh...',
       searchEmpty: 'No additional results found.',
@@ -1048,6 +1193,7 @@ export const resources = {
         'We detected newly installed tools: {{tools}}. Sync managed skills now?',
       later: 'Later',
       syncAll: 'Sync all managed skills',
+      skillSelection: { unavailable: 'Unavailable' },
       gitInstall: {
         heldBack: 'Update skipped because it would remove managed files. Review the skill before updating.',
         cancelled: 'Cancelled. Installed {{installed}}, updated {{updated}}, already current {{unchanged}}, failed {{failed}}.',
@@ -1090,6 +1236,7 @@ export const resources = {
         targetExistsDetail:
           'Target folder already exists: {{path}}. For safety it was not overwritten.',
         toolNotInstalled: 'The selected tool is not installed. Please refresh and retry.',
+        toolPathChanged: '{{tool}} now uses a different sync directory: {{path}}. The old deployment has not been cleared. Disable and re-enable this Skill; if it still fails, report this message.',
         toolNotWritable:
           'Cannot sync to {{tool}}: permission denied on {{path}}. Please check directory permissions or run as administrator.',
         targetOverlapsSource:
@@ -1258,6 +1405,141 @@ export const resources = {
   },
   zh: {
     translation: {
+      installFlow: {"source": "安装来源", "sourceStep": "选择来源", "confirmStep": "2. 确认安装", "detect": "下一步", "detectHint": "先检测可用的 Skills，再确认安装内容、标签和使用范围。", "back": "上一步", "projectCount": "项目 · {{count}} 个目录", "confirmTitle": "确认安装", "detecting": "正在检测 Skills…", "confirmTools": "请先确认共享工具的选择。", "chooseTags": "选择标签", "collapseTags": "收起", "noTags": "未添加标签", "selectStep": "选择 Skills", "settingsStep": "安装设置", "next": "下一步"},
+      discovery: {
+  "loadMoreCollections": "加载更多合集",
+  "showingCollections": "已显示 {{shown}} / {{total}} 个合集",
+  "intro": "为你的下一项任务，找到合适的 Skills。",
+  "importIntro": "添加已有来源，设置 Skills 的标签和使用范围。",
+  "git": "从 Git 安装",
+  "local": "从本地导入",
+  "back": "返回探索",
+  "search": "搜索 Skills、合集或用途…",
+  "clear": "清空搜索",
+  "try": "试试",
+  "topics": {
+    "frontend": "前端设计",
+    "testing": "测试开发",
+    "video": "视频制作",
+    "marketing": "营销增长"
+  },
+  "collections": "按场景发现合集",
+  "collectionIntro": "围绕一项任务整理的 Skills，先了解，再按需安装。",
+  "matchingCollections": "相关合集",
+  "view": "查看 {{name}}",
+  "results": "单个 Skills",
+  "searchMore": "想找某个具体的 Skill？在上方搜索，即可发现 skills.sh 上的更多内容。",
+  "searchHelp": "换一个关键词试试，也可以通过 Git 仓库直接安装。",
+  "installError": "无法打开安装页面，请重试。"
+},
+      "catalog": {
+  "browse": "浏览",
+  "collections": "合集",
+  "skills": "Skills 搜索",
+  "searchCollections": "搜索合集或使用场景…",
+  "searchSkills": "在 skills.sh 搜索 Skills…",
+  "source": "与官网同步的精选合集，查看内容后按需安装。",
+  "searchHint": "输入至少 2 个字符，在 skills.sh 搜索单个 Skill。",
+  "back": "全部合集",
+  "loadError": "合集加载失败，请检查网络后重试。",
+  "retry": "重试",
+  "chooseInstall": "选择安装 · {{count}} 个 Skills",
+  "conflict": "合集包含冲突来源，暂时无法安装。",
+  "included": "包含的 Skills",
+  "count": "{{count}} 个 Skills",
+  "view": "查看合集",
+  "empty": "没有匹配的合集。",
+  "installs": "{{count}} 次安装",
+  "editorialAuthor": "Skills Hub 整理",
+  "recommendedBy": "{{name}} 推荐",
+  "licenseNeedsReview": "许可待核对"
+},
+      collectionInstall: {
+  "title": "安装合集",
+  "checking": "正在检查技能库…",
+  "conflictState": "名称冲突",
+  "previewFailed": "无法检查技能库，请重试后再安装。",
+  "previewRetry": "重新检查",
+  "success": "合集安装成功，共 {{count}} 个 Skills",
+  "intro": "请确认这 {{count}} 个 Skills 及其来源，再安装到你的技能库。",
+  "listLabel": "待安装的 Skills",
+  "close": "关闭",
+  "install": "安装 Skills",
+  "installCount": "安装 {{count}} 个 Skills",
+  "selectAll": "全选",
+  "selectSkill": "选择 {{name}}",
+  "selected": "已选 {{count}} / {{total}}",
+  "notSelected": "未选择",
+  "retry": "重试失败项",
+  "done": "完成",
+  "tools": "同时分发到工具（可选）",
+  "scope": "选择要使用这些 Skills 的工具，不选则仅安装到技能库。",
+  "existingNote": "已安装的同源 Skills 会保留；名称冲突的项目不会被覆盖。",
+  "working": "正在安装…",
+  "pending": "待安装",
+  "installed": "已安装",
+  "existing": "已在技能库中",
+  "failed": "失败",
+  "missing": "在指定版本中没有找到这个 Skill。",
+  "conflict": "技能库中有同名的其他 Skill，请先处理名称冲突。",
+  "busy": "请先完成当前操作或关闭安装窗口，再打开其他合集。",
+  "linkErrors": {
+    "tooLarge": {
+      "title": "安装清单太大",
+      "help": "请在官网减少勾选的 Skills，分批安装；也可以在「添加 Skills」中找到这个合集并安装。"
+    },
+    "tooManySkills": {
+      "title": "一次选择的 Skills 太多",
+      "help": "当前版本一次最多支持 2,000 个 Skills。请减少选择，分批安装。"
+    },
+    "tooManySources": {
+      "title": "一次选择的来源仓库太多",
+      "help": "当前版本一次最多支持 100 个仓库来源。请减少选择，分批安装。"
+    },
+    "unsupported": {
+      "title": "当前版本无法读取这份安装清单",
+      "help": "请更新 Skills Hub，再从官网打开合集。如果更新后仍出现此提示，请反馈合集名称。"
+    },
+    "empty": {
+      "title": "还没有选择要安装的 Skills",
+      "help": "请在官网至少勾选一个 Skill，再点击「在 Skills Hub 中安装」。"
+    },
+    "duplicate": {
+      "title": "安装清单中有重名或重复的 Skills",
+      "help": "请在官网取消重名或重复的项目，再打开安装清单。"
+    },
+    "unsafe": {
+      "title": "这个合集的安装信息有误",
+      "help": "来源、Skill 名称或目录不符合安装要求。请反馈合集名称，以便修正。"
+    },
+    "invalid": {
+      "title": "无法读取安装清单",
+      "help": "请回到官网合集页重新选择 Skills，再点击「在 Skills Hub 中安装」；仍然失败时，请反馈合集名称。"
+    },
+    "unavailable": {
+      "title": "无法接收官网的安装请求",
+      "help": "请重启 Skills Hub，再回到官网点击「在 Skills Hub 中安装」。"
+    },
+    "failed": {
+      "title": "暂时无法打开安装确认",
+      "help": "请重新打开这个合集；仍然失败时，重启 Skills Hub 后重试。"
+    }
+  },
+  "refreshFailed": "安装已结束，但技能库刷新失败，请重新打开「我的 Skills」。",
+  "search": "搜索 Skills",
+  "noMatches": "没有匹配的 Skills，已选项保持不变。",
+  "newTag": "新建标签",
+  "tagHint": "标签仅添加到本次新安装的 Skills，方便后续筛选和清理。",
+  "settings": "安装设置",
+  "total": "共 {{count}} 个 Skills",
+  "progress": "已完成 {{count}} / {{total}}",
+  "failures": "{{count}} 项失败",
+  "toolCount": "已选 {{count}} 个工具",
+  "libraryOnly": "仅安装到技能库",
+  "progressLabel": "安装进度",
+  "noTools": "暂无可用工具，Skills 将安装到技能库。",
+  "sharedTools": "共用同一目录的工具会一起选中。"
+},
       appName: 'Skills Hub',
       unknown: '未知',
       languageShort: {
@@ -1881,6 +2163,18 @@ export const resources = {
         clear: '清空',
         tags: '标签',
         sync: '工具',
+        update: '更新',
+        updateTitle: '正在更新 Skills...',
+        updateHelp: '更新已启用且已绑定来源的所选 Skills；停用或未绑定来源的项会跳过。',
+        updateProgress: '{{current}}/{{total}} 正在更新「{{name}}」...',
+        updateCancelling: '当前 Skill 更新完成后将停止...',
+        updateResultTitle: '批量更新结果',
+        updateResult: '已更新 {{updated}}，无变化 {{unchanged}}，跳过 {{skipped}}，失败 {{failed}}。',
+        updateCancelled: '已停止，还有 {{count}} 个 Skills 未执行更新。',
+        updateSkippedHelp: '已跳过停用或未绑定来源的 Skills；请先启用或绑定来源，再执行更新。',
+        updateRetryHint: '失败和未执行的 Skills 仍已选中，可点击「更新」重试。',
+        updateDetails: '需要处理的项目',
+        updateFailedTitle: '更新「{{name}}」失败',
         enable: '启用',
         disable: '停用',
         delete: '删除',
@@ -2262,11 +2556,9 @@ export const resources = {
       searchTab: '搜索',
       exploreTab: '探索',
       exploreFilterPlaceholder: '筛选精选或在线搜索技能...',
-      exploreEmpty: '暂无精选技能。',
-      exploreLoading: '加载精选技能中...',
+      exploreEmpty: '暂无合集。',
+      exploreLoading: '正在加载合集…',
       exploreSource: '数据来自',
-      exploreSourceHint: '精选推荐：来自精选 GitHub 仓库的 Top 300 · 在线搜索：更多结果来自 skills.sh · 输入 2 个字符开始搜索',
-      exploreFeaturedTitle: '精选推荐',
       exploreOnlineTitle: '在线搜索',
       searchLoading: '正在搜索 skills.sh...',
       searchEmpty: '未找到更多结果。',
@@ -2282,6 +2574,7 @@ export const resources = {
       newToolsBody: '已检测到新工具：{{tools}}，是否立即同步托管 Skills？',
       later: '稍后',
       syncAll: '同步全部托管 Skills',
+      skillSelection: { unavailable: '不可用' },
       gitInstall: {
         heldBack: '本次更新会删除受管理的文件，已跳过，请先检查该技能。',
         cancelled: '已取消。新增 {{installed}} 个，更新 {{updated}} 个，已是最新 {{unchanged}} 个，失败 {{failed}} 个。',
@@ -2323,6 +2616,7 @@ export const resources = {
         targetExistsDetail:
           '目标目录已存在同名 Skill：{{path}}。为安全起见未覆盖。\n你可以：先手动清理该目录后重试。',
         toolNotInstalled: '未检测到该工具已安装，请刷新后重试。',
+        toolPathChanged: '{{tool}} 的同步目录已变更为 {{path}}，旧同步记录尚未清理。请先停用再启用这个 Skill；仍失败时，请反馈此提示。',
         toolNotWritable:
           '无法同步到 {{tool}}：目录 {{path}} 权限不足。请检查目录权限或以管理员身份运行。',
         targetOverlapsSource:

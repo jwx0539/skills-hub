@@ -15,6 +15,7 @@ use crate::services::error::ErrorCode;
 use crate::services::install::{InstallAction, InstallRequest};
 use crate::services::operation_lock::{OperationKind, OperationLock};
 use crate::services::skills_hub::SkillsHubService;
+use crate::services::workflows::{SelectionOutcome, SkillSelection};
 
 struct Fixture {
     _home: TempDir,
@@ -149,10 +150,11 @@ fn source_parser_is_deterministic_and_does_not_guess_bare_local_names() {
 }
 
 #[test]
-fn marketplace_shorthand_requires_a_complete_safe_ref_and_path() {
+fn marketplace_shorthand_requires_a_complete_safe_ref_and_optional_tree_path() {
     for valid in [
         "owner/repo",
         "owner/repo.git",
+        "owner/repo/tree/main",
         "owner/repo/tree/main/skills/demo",
         "owner/repo/blob/main/skills/demo/SKILL.md",
     ] {
@@ -165,7 +167,7 @@ fn marketplace_shorthand_requires_a_complete_safe_ref_and_path() {
     for invalid in [
         "owner/repo/tree",
         "owner/repo/tree/",
-        "owner/repo/tree/main",
+        "owner/repo/blob/main",
         "owner/repo/tree/main/",
         "owner/repo/tree//skills/demo",
         "owner/repo/tree/main/../demo",
@@ -458,7 +460,7 @@ fn search_uses_the_saved_application_proxy() {
 }
 
 #[test]
-fn destructive_update_is_held_back_without_changing_the_library() {
+fn source_mirror_update_removes_files_missing_from_source() {
     let fixture = Fixture::new();
     let source = fixture.paths.app_data_dir.join("update-source");
     write_skill(&source, "update-demo");
@@ -468,13 +470,13 @@ fn destructive_update_is_held_back_without_changing_the_library() {
     fs::remove_file(source.join("keep-me.txt")).unwrap();
 
     let check = service.check_updates(installed.id.clone().into()).unwrap();
-    let error = service.update(installed.id.clone().into()).unwrap_err();
+    let updated = service.update(installed.id.clone().into()).unwrap();
 
     assert!(check.update_available);
-    assert!(check.held_back);
+    assert!(!check.held_back);
     assert_eq!(check.removal_count, 1);
-    assert_eq!(error.code, ErrorCode::UpdateHeldBack);
-    assert!(Path::new(&installed.central_path)
+    assert!(updated.changed);
+    assert!(!Path::new(&installed.central_path)
         .join("keep-me.txt")
         .exists());
     let unchanged = service.show_skill(installed.id.into()).unwrap();
@@ -483,17 +485,18 @@ fn destructive_update_is_held_back_without_changing_the_library() {
 }
 
 #[test]
-fn update_is_held_back_when_a_deployed_copy_contains_a_removed_file() {
+fn source_mirror_update_refreshes_deployed_copies_after_source_deletion() {
     let fixture = Fixture::new();
     let source = fixture.paths.app_data_dir.join("copy-source");
     write_skill(&source, "copy-demo");
     let service = fixture.open();
+    fs::write(source.join("obsolete.txt"), "old source file").unwrap();
     let installed = service.install(InstallRequest::local(&source)).unwrap();
-    let original_skill_md =
-        fs::read_to_string(Path::new(&installed.central_path).join("SKILL.md")).unwrap();
     let target = fixture.paths.app_data_dir.join("deployed-copy");
+    fs::create_dir_all(fixture._home.path().join(".codex")).unwrap();
     write_skill(&target, "copy-demo");
-    fs::write(target.join("user-extra.txt"), "keep").unwrap();
+    fs::write(target.join("obsolete.txt"), "old source file").unwrap();
+    fs::remove_file(source.join("obsolete.txt")).unwrap();
     service
         .store()
         .upsert_skill_target(&SkillTargetRecord {
@@ -516,16 +519,20 @@ fn update_is_held_back_when_a_deployed_copy_contains_a_removed_file() {
     .unwrap();
 
     let check = service.check_updates(installed.id.clone().into()).unwrap();
-    let error = service.update(installed.id.clone().into()).unwrap_err();
+    let updated = service.update(installed.id.clone().into()).unwrap();
 
-    assert!(check.held_back);
-    assert_eq!(check.removal_count, 1);
-    assert_eq!(error.code, ErrorCode::UpdateHeldBack);
-    assert_eq!(
-        fs::read_to_string(Path::new(&installed.central_path).join("SKILL.md")).unwrap(),
-        original_skill_md
-    );
-    assert!(target.join("user-extra.txt").exists());
+    assert!(!check.held_back);
+    assert_eq!(check.removal_count, 2);
+    assert!(updated.changed);
+    assert_eq!(updated.updated_targets, vec!["codex"]);
+    assert!(updated.pending_targets.is_empty());
+    for directory in [Path::new(&installed.central_path), target.as_path()] {
+        assert_eq!(
+            fs::read_to_string(directory.join("SKILL.md")).unwrap(),
+            "---\nname: copy-demo\ndescription: Updated\n---\n\nChanged\n"
+        );
+        assert!(!directory.join("obsolete.txt").exists());
+    }
 }
 
 #[test]
@@ -747,7 +754,7 @@ fn git_incremental_install_reuses_renamed_skills_and_honors_explicit_names() {
 }
 
 #[test]
-fn git_incremental_install_keeps_destructive_updates_held_back() {
+fn source_mirror_update_via_git_incremental_install_removes_obsolete_files() {
     let fixture = Fixture::new();
     let repo = fixture.paths.app_data_dir.join("destructive-source");
     write_skill(&repo.join("alpha"), "alpha");
@@ -762,9 +769,10 @@ fn git_incremental_install_keeps_destructive_updates_held_back() {
     let first = service.install(request.clone()).unwrap();
     fs::remove_file(repo.join("alpha/keep.txt")).unwrap();
     commit_git_changes(&repo);
-    let error = service.install(request).unwrap_err();
-    assert_eq!(error.code, ErrorCode::UpdateHeldBack);
-    assert!(Path::new(&first.central_path).join("keep.txt").exists());
+    let updated = service.install(request).unwrap();
+    assert_eq!(updated.id, first.id);
+    assert_eq!(updated.action, InstallAction::Updated);
+    assert!(!Path::new(&first.central_path).join("keep.txt").exists());
 }
 
 #[test]
@@ -860,4 +868,127 @@ fn cancelled_git_update_does_not_change_content_or_source_health() {
         crate::core::content_hash::hash_dir(Path::new(&first.central_path)).unwrap(),
         first.content_hash.unwrap()
     );
+}
+
+#[test]
+fn collection_preview_identifies_renamed_source_instead_of_name_collision() {
+    let fixture = Fixture::new();
+    let repo = fixture.paths.app_data_dir.join("collection-source");
+    write_skill(&repo, "design");
+    init_git_repo(&repo);
+    let service = fixture.open();
+    let url = format!("file://{}", repo.display());
+    let original = service
+        .install(InstallRequest::git(&url).with_name(Some("design-custom".into())))
+        .unwrap();
+    let local = fixture.paths.app_data_dir.join("unrelated");
+    write_skill(&local, "design");
+    let other = service.install(InstallRequest::local(&local)).unwrap();
+    let preview = service
+        .git_install_preview_with_cancel(&url, None, None)
+        .unwrap();
+    let value = serde_json::to_value(&preview[0]).unwrap();
+    assert_eq!(value["existing_skill_id"], original.id);
+    assert_ne!(value["existing_skill_id"], other.id);
+    fs::remove_dir_all(&repo).unwrap();
+    let local_preview = service
+        .git_install_local_preview(
+            &url,
+            vec![
+                crate::core::installer::GitSkillCandidate {
+                    name: "design".into(),
+                    subpath: ".".into(),
+                    description: None,
+                },
+                crate::core::installer::GitSkillCandidate {
+                    name: "design".into(),
+                    subpath: "other".into(),
+                    description: None,
+                },
+                crate::core::installer::GitSkillCandidate {
+                    name: "new-skill".into(),
+                    subpath: "new".into(),
+                    description: None,
+                },
+            ],
+            None,
+        )
+        .unwrap();
+    assert_eq!(local_preview[0].status, "update");
+    assert_eq!(
+        local_preview[0].existing_skill_id.as_deref(),
+        Some(original.id.as_str())
+    );
+    assert_eq!(local_preview[1].status, "conflict");
+    assert_eq!(local_preview[2].status, "install");
+}
+
+#[test]
+fn source_mirror_update_replaces_local_library_changes() {
+    let fixture = Fixture::new();
+    let source = fixture.paths.app_data_dir.join("mirror-source");
+    write_skill(&source, "mirror-demo");
+    let service = fixture.open();
+    let installed = service.install(InstallRequest::local(&source)).unwrap();
+    let central = Path::new(&installed.central_path);
+    fs::write(central.join("SKILL.md"), "local edit").unwrap();
+    fs::write(central.join("extra.txt"), "local addition").unwrap();
+
+    let updated = service.update(installed.id.into()).unwrap();
+
+    assert!(updated.changed);
+    assert!(!central.join("extra.txt").exists());
+    assert_eq!(
+        fs::read_to_string(central.join("SKILL.md")).unwrap(),
+        "---\nname: mirror-demo\ndescription: Test skill\n---\n\nBody\n"
+    );
+}
+
+#[test]
+fn source_mirror_update_rejects_source_without_skill_md() {
+    let fixture = Fixture::new();
+    let source = fixture.paths.app_data_dir.join("invalid-source");
+    write_skill(&source, "invalid-demo");
+    let service = fixture.open();
+    let installed = service.install(InstallRequest::local(&source)).unwrap();
+    fs::remove_file(source.join("SKILL.md")).unwrap();
+
+    let check_error = service
+        .check_updates(installed.id.clone().into())
+        .unwrap_err();
+    let update_error = service.update(installed.id.into()).unwrap_err();
+
+    assert_eq!(check_error.code, ErrorCode::InvalidSource);
+    assert_eq!(update_error.code, ErrorCode::InvalidSource);
+    assert_eq!(
+        fs::read_to_string(Path::new(&installed.central_path).join("SKILL.md")).unwrap(),
+        "---\nname: invalid-demo\ndescription: Test skill\n---\n\nBody\n"
+    );
+}
+
+#[test]
+fn source_mirror_update_batch_applies_source_deletions() {
+    let fixture = Fixture::new();
+    let service = fixture.open();
+    let mut central_paths = Vec::new();
+    for name in ["batch-alpha", "batch-beta"] {
+        let source = fixture.paths.app_data_dir.join(name);
+        write_skill(&source, name);
+        fs::write(source.join("obsolete.txt"), "old").unwrap();
+        let installed = service.install(InstallRequest::local(&source)).unwrap();
+        central_paths.push(installed.central_path);
+        fs::remove_file(source.join("obsolete.txt")).unwrap();
+    }
+
+    let SelectionOutcome::All(updated) = service.update_selection(SkillSelection::All).unwrap()
+    else {
+        panic!("expected batch outcome");
+    };
+
+    assert_eq!(updated.len(), 2);
+    assert!(updated.iter().all(|outcome| outcome.changed));
+    for central in central_paths {
+        assert!(!Path::new(&central).join("obsolete.txt").exists());
+        assert!(Path::new(&central).join("SKILL.md").is_file());
+    }
 }

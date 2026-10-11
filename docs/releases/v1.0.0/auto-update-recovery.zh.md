@@ -1,6 +1,8 @@
 # Skill 更新中断恢复
 
-修复 [#183](https://github.com/qufei1993/skills-hub/issues/183)。
+[English](auto-update-recovery.md)
+
+修复 [#183](https://github.com/qufei1993/skills-hub/issues/183) · [PR #192](https://github.com/qufei1993/skills-hub/pull/192)。
 
 更新进程被终止后，数据库可能一直保留 `running`，导致重启应用后仍无法点击“立即更新”。Windows 原先只检查计划任务是否已注册；运行状态轮询也绕过了旧的 macOS 显示修正。
 

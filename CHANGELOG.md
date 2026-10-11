@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0]
+
+### Added
+
+- **Selected Skill batch updates**: Update multiple selected Skills from the library's bulk action bar using their existing Git or local sources and saved deployment settings. Show per-Skill progress, stop after the current Skill on cancellation, continue after individual failures, and keep result counts and failure details available until dismissed. Skip disabled Skills and unbound local sources; retain failed and unprocessed selections for retry.
+- **Collection discovery**: Browse the website's published collection catalog and details in the desktop app, with matching collections and skills.sh results in one search. Git and local import remain available from the page header. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Website collection installation**: Open a collection from the website, review its Skills and pinned GitHub sources, and confirm installation into the shared library. Choose individual Skills, tags, tools, and global or project deployment; preserve existing same-source content and retry failed items. ([PR #185](https://github.com/qufei1993/skills-hub/pull/185), [PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Independent website release data**: Stable desktop releases publish installer links and bilingual notes to a dedicated Cloudflare Pages data source without rebuilding the website. Preparation failures stop deployment; previous production deployments remain available for rollback. ([PR #184](https://github.com/qufei1993/skills-hub/pull/184))
+
+### Improved
+
+- **Unified installation flow**: Git, local, and collection sources share “Select Skills → Installation settings,” including single-Skill sources. Search, selection rows, expandable descriptions, tags, tool choices, and scope controls use a consistent layout with visible footer actions and clear disabled states. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Collection browsing and caching**: Replace the Top 300 feed and legacy collection endpoint with the website's versioned catalog. Load 12 cards at a time while scrolling, preserve loaded batches on detail return, and reuse validated index/detail caches from the same snapshot. Search matches collection metadata; category colors, icons, and consolidated repository labels clarify details. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+
+### Fixed
+
+- **Re-enabling Skills after disable**: Restore saved tool selections for individual and bulk enable operations while skipping tools disabled in Tools and unavailable global tools. A failed tool no longer stops other saved targets from restoring. Restore removed disabled targets at updated tool paths while preserving existing content and active historical deployments. Refresh individual Skill state even after an error, and translate batch error codes separately from their titles; changed tool paths no longer report nonexistent directory conflicts.
+
+- **Headless Skill updates**: Prevent scheduled updates and “Update now” workers from creating extra windows or briefly appearing as an `exec` icon in the macOS Dock. Background updates continue independently of the main window. (fixes [#152](https://github.com/qufei1993/skills-hub/issues/152), [PR #193](https://github.com/qufei1993/skills-hub/pull/193))
+- **Source-mirrored Skill updates**: Apply source file deletions and renames during single, batch, and same-source Git updates instead of blocking them. Reject update sources without `SKILL.md` before replacing the library copy.
+- **Windows scheduled update errors**: Decode localized Task Scheduler output with the system OEM code page instead of displaying garbled errors when creating, deleting, querying, or running tasks. (fixes [#181](https://github.com/qufei1993/skills-hub/issues/181), [PR #188](https://github.com/qufei1993/skills-hub/pull/188))
+- **Windows subdirectory Skill updates**: Fix `path not found in repo` for backslash-separated source paths. Normalize new paths, retain compatibility with existing installations, and refresh caches missing the selected directory without reinstallation or database migration. (fixes [#182](https://github.com/qufei1993/skills-hub/issues/182), [PR #189](https://github.com/qufei1993/skills-hub/pull/189))
+- **Interrupted Skill updates**: Recover persisted running status after an update worker terminates, preserve completed progress, and make Update now available again. A shared operation lock protects active workers and concurrent manual triggers. (fixes [#183](https://github.com/qufei1993/skills-hub/issues/183), [PR #192](https://github.com/qufei1993/skills-hub/pull/192))
+- **CLI adoption with excluded entries**: Fix false `PLAN_STALE` errors from `skills adopt --yes` when noncanonical source paths contain excluded entries. Preview and confirmation use the same canonical root while retaining content-change and path-escape checks. (fixes [#186](https://github.com/qufei1993/skills-hub/issues/186), [PR #191](https://github.com/qufei1993/skills-hub/pull/191))
+- **Large collection installation**: Validate native collection manifests directly, supporting up to 2,000 Skills without applying external deep-link size limits. Source, revision, duplicate, and path checks remain enforced. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Website collection link validation**: Remove the outdated 100-Skill limit that rejected valid collections such as Aaron's 120-Skill marketing collection. Website and native manifests share the same Skill and source limits; the 30,000-byte external link limit and all source, revision, duplicate, and path checks remain enforced.
+- **Clearer website installation failures**: Explain whether the installation list is too large, unsupported, empty, duplicated, or contains incorrect installation information, with a recovery action for each case. Error explanations remain open until dismissed and are available in English, Simplified Chinese, and Korean; internal error details are not displayed.
+- **Pinned repository-root sources**: Accept valid `/tree/<ref>` repository-root URLs so fixed-commit collection items reach download instead of failing source validation. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Collection conflicts and completion**: Preview existing sources and name conflicts before installation, disable conflicting rows, and restrict counts, installation, and retries to eligible selections. Revalidate before execution; close the dialog after all selected items succeed and retain failures for retry. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Installation dialog state and website launch**: Preserve inputs, selections, settings, and retry progress when returning or temporarily deferring confirmation; ignore late results from cancelled scans. Website requests reveal collection confirmation over an idle manual form, and valid macOS links restore and focus the window. Windows candidate paths are matched across directory separators. ([PR #185](https://github.com/qufei1993/skills-hub/pull/185), [PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+- **Linux collection link registration**: Include Debian utilities required for protocol registration and keep desktop startup available if registration fails. Package startup verification uses an isolated desktop bus session. ([PR #185](https://github.com/qufei1993/skills-hub/pull/185))
+- **Project scope layout**: Align expanded project directories and recent paths with installation controls, including narrow windows. ([PR #187](https://github.com/qufei1993/skills-hub/pull/187))
+
 ## [0.11.0]
 
 ### Added
@@ -23,10 +56,6 @@ All notable changes to this project will be documented in this file.
 - **Shared library refresh**: Returning to the app, entering library or tag pages, or opening tag filters refreshes Skills and tags while preserving filters. AI changes appear without restarting.
 
 ### Fixed
-
-- **Interrupted Skill updates**: Recover persisted running state after a terminated update worker, including on Windows. Preserve completed progress, allow retry, and keep active workers protected by the shared write lock (fixes [#183](https://github.com/qufei1993/skills-hub/issues/183)).
-
-- **CLI adoption with excluded entries**: `skills adopt --yes` no longer reports a false `PLAN_STALE` when source paths need normalization and the directory contains empty folders, invalid Skills, or excluded links. Preview and confirmation use consistent paths while preserving stale-content and path-escape checks (fixes [#186](https://github.com/qufei1993/skills-hub/issues/186)).
 
 - **AI management updates and rollback**: Same-version official Skill changes now offer an update. Enable repairs the managed official central copy directly, while preserving tool-target and path protections. Failed CLI replacement preserves the previous verified installation; switching between development and production restores the correct terminal command priority. Bridge operations explicitly unlock on completion to prevent child processes from briefly retaining the lock between fork and exec. CLI staging cannot publish an incomplete release. Linux packages declare the glibc 2.39 minimum and verify actual installation and package upgrade.
 
