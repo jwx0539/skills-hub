@@ -30,13 +30,13 @@ Skills Hub supports **48 AI coding tools**, including Claude Code, Codex, Cursor
 
 ## Preview
 
-Your library, with tool sync status and bulk actions.
+Your library, with tool sync status, tags, and filters.
 
-![Skills Hub v1.0.0 library and bulk update action](docs/assets/skills-library-v1.0.0.jpg)
+![Skills Hub v1.0.0 library in English](docs/assets/skills-library-cards-en.png)
 
 Collections for the task you're working on. Select the Skills you need before installing.
 
-![Skills Hub v1.0.0 collection discovery](docs/assets/skill-collections-v1.0.0.jpg)
+![Skills Hub v1.0.0 collection discovery in English](docs/assets/skill-collections-en.png)
 
 ## Get started
 
