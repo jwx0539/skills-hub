@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Status and tool filters for Skills**: Filter the library by enabled or disabled state and by the tools each Skill is currently synced to (match any). Counts reflect the other active filters, and Clear filters resets them together with search, scope, and tags.
+
 ## [1.0.0]
 
 ### Added
