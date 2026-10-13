@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Improved
+
+- **Tool sync icons on Skill cards**: Show the tool name and sync state immediately when hovering or focusing an icon, instead of waiting for the delayed native tooltip. Icons no longer overlap, so each one has its full click area.
+
 ## [1.0.0]
 
 ### Added
